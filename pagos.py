@@ -210,11 +210,21 @@ class Receptor:
         self._nombre = nombre
         self._rfc = rfc
         self._uso_cfdi = uso_cfdi
+        self._clave = ''
         self._calle = ''
         self._colonia = ''
         self._municipio = ''
         self._estado = ''
         self._pais = ''
+        self._codigo_postal = ''
+
+    @property
+    def clave(self):
+        return self._clave
+
+    @clave.setter
+    def clave(self, clave):
+        self._clave = clave
 
     @property
     def nombre(self):
@@ -279,6 +289,14 @@ class Receptor:
     @pais.setter
     def pais(self, pais):
         self._pais = pais
+
+    @property
+    def codigo_postal(self):
+        return self._codigo_postal
+
+    @codigo_postal.setter
+    def codigo_postal(self, codigo_postal):
+        self._codigo_postal = codigo_postal 
 
 
 class Concepto:

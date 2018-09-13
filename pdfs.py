@@ -100,8 +100,10 @@ with open(archivo_f33, 'r') as f33:
     lineas = {x.rstrip().split('|')[0]:x.rstrip().split('|')[1:] for x in f33}
 
 comprobante.total_letra = lineas['DOCUMENTO'][15]
+comprobante.receptor.clave = lineas['CLIENTE'][0]
 comprobante.receptor.calle = lineas['CLIENTE'][2]
 comprobante.receptor.colonia = lineas['CLIENTE'][3]
 comprobante.receptor.municipio = lineas['CLIENTE'][10]
 comprobante.receptor.estado = lineas['CLIENTE'][11]
 comprobante.receptor.pais = lineas['CLIENTE'][12]
+comprobante.receptor.codigo_postal = lineas['CLIENTE'][7]
