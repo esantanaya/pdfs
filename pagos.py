@@ -16,7 +16,8 @@ class Comprobante:
         receptor,
         conceptos=None,
         pagos=None,
-        timbre=None
+        timbre=None,
+        tota_letra=None,
     ):
         self._no_certificado = no_certificado
         self._fecha = fecha
@@ -34,7 +35,7 @@ class Comprobante:
         self._conceptos = conceptos
         self._pagos = pagos
         self._timbre = timbre
-        self._total_letra = ''
+        self._total_letra = total_letra
 
     @property
     def no_certificado(self):
@@ -206,17 +207,29 @@ class Emisor:
 
 class Receptor:
 
-    def __init__(self, nombre, rfc, uso_cfdi):
+    def __init__(
+        self,
+        nombre,
+        rfc,
+        uso_cfdi,
+        clave=None,
+        calle=None,
+        colonia=None,
+        municipio=None,
+        estado=None,
+        pais=None,
+        codigo_postal=None,
+    ):
         self._nombre = nombre
         self._rfc = rfc
         self._uso_cfdi = uso_cfdi
-        self._clave = ''
-        self._calle = ''
-        self._colonia = ''
-        self._municipio = ''
-        self._estado = ''
-        self._pais = ''
-        self._codigo_postal = ''
+        self._clave = clave
+        self._calle = calle
+        self._colonia = colonia
+        self._municipio = municipio
+        self._estado = estado
+        self._pais = pais
+        self._codigo_postal = codigo_postal
 
     @property
     def clave(self):
@@ -296,7 +309,7 @@ class Receptor:
 
     @codigo_postal.setter
     def codigo_postal(self, codigo_postal):
-        self._codigo_postal = codigo_postal 
+        self._codigo_postal = codigo_postal
 
 
 class Concepto:
