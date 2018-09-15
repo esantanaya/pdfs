@@ -14,10 +14,10 @@ class Comprobante:
         version,
         emisor,
         receptor,
-        conceptos=None,
+        concepto=None,
         pagos=None,
         timbre=None,
-        tota_letra=None,
+        total_letra=None,
     ):
         self._no_certificado = no_certificado
         self._fecha = fecha
@@ -32,7 +32,7 @@ class Comprobante:
         self._version = version
         self._emisor = emisor
         self._receptor = receptor
-        self._conceptos = conceptos
+        self._concepto = concepto
         self._pagos = pagos
         self._timbre = timbre
         self._total_letra = total_letra
@@ -142,12 +142,12 @@ class Comprobante:
         self._receptor = receptor
 
     @property
-    def conceptos(self):
-        return self._conceptos
+    def concepto(self):
+        return self._concepto
 
-    @conceptos.setter
-    def conceptos(self, conceptos):
-        self._conceptos = conceptos
+    @concepto.setter
+    def concepto(self, concepto):
+        self._concepto = concepto
 
     @property
     def pagos(self):
@@ -541,7 +541,8 @@ class TimbreFiscalDigital:
         sello_cfd,
         sello_sat,
         uuid,
-        version
+        version,
+        cadena_original=None,
     ):
 
         self._fecha_timbrado = fecha_timbrado
@@ -551,6 +552,7 @@ class TimbreFiscalDigital:
         self._sello_sat = sello_sat
         self._uuid = uuid
         self._version = version
+        self._cadena_original = cadena_original
 
     @property
     def fecha_timbrado(self):
@@ -607,3 +609,12 @@ class TimbreFiscalDigital:
     @version.setter
     def version(self, version):
         self._version = version
+
+    @property
+    def cadena_original(self):
+        return self._cadena_original
+
+    @cadena_original.setter
+    def cadena_original(self, cadena_original):
+        self._cadena_original = cadena_original
+        

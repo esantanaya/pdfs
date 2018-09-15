@@ -34,7 +34,6 @@ def leer_archivos(archivo):
                 child.attrib['UsoCFDI'],
             )
         elif child.tag == f'{ns_cfdi}Conceptos':
-            conceptos = []
             for grandchild in child:
                 concepto = Concepto(
                     grandchild.attrib['Cantidad'],
@@ -44,7 +43,6 @@ def leer_archivos(archivo):
                     grandchild.attrib['Importe'],
                     grandchild.attrib['ValorUnitario'],
                 )
-                conceptos.append(concepto)
         elif child.tag == f'{ns_cfdi}Complemento':
             for grandchild in child:
                 if grandchild.tag == f'{ns_pago10}Pagos':
@@ -99,7 +97,7 @@ def leer_archivos(archivo):
             root.attrib['Version'],
             emisor,
             receptor,
-            conceptos,
+            concepto,
             pagos,
             timbre,
         )
