@@ -1,6 +1,6 @@
 import os
 import re
-from xml.etree import ElementTree as ET
+from lxml import etree as ET
 
 import qrcode
 from pagos import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
@@ -48,6 +48,11 @@ def leer_archivos(archivo):
                 if grandchild.tag == f'{ns_pago10}Pagos':
                     element_pagos = list(grandchild)
                 if grandchild.tag == f'{ns_tfd}TimbreFiscalDigital':
+                    str_timbre = ET.tostring(grandchild)
+                    xdoc = ET.fromstring(str_timbre)
+                    xslt = ET.parse('recursos\\xslt\\cadenaoriginal_TFD_1_1.xslt')
+                    trans = ET.XSLT(xslt)
+                    doc = trans(xdoc)
                     timbre = TimbreFiscalDigital(
                         grandchild.attrib['FechaTimbrado'],
                         grandchild.attrib['NoCertificadoSAT'],
@@ -56,10 +61,12 @@ def leer_archivos(archivo):
                         grandchild.attrib['SelloSAT'],
                         grandchild.attrib['UUID'],
                         grandchild.attrib['Version'],
+                        str(doc),
                     )
 
     pagos = []
     for element_pago in element_pagos:
+        total_pagos = 0
         element_docto = element_pago.find(
             f'{ns_pago10}DoctoRelacionado')
         docto = DoctoRelacionado(
