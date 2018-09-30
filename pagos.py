@@ -617,4 +617,109 @@ class TimbreFiscalDigital:
     @cadena_original.setter
     def cadena_original(self, cadena_original):
         self._cadena_original = cadena_original
-        
+
+
+class Linea:
+    def __init__(
+        self,
+        rfc=None,
+        razon_social=None,
+        calle_numero=None,
+        colonia=None,
+        ciudad=None,
+        estado_pais=None,
+        codigo_postal=None,
+        regimen_fiscal=None,
+        color=None,
+        logo=None,
+    ):
+        self._rfc = rfc
+        self._razon_social = razon_social
+        self._calle_numero = calle_numero
+        self._colonia = colonia
+        self._ciudad = ciudad
+        self._estado_pais = estado_pais
+        self._codigo_postal = codigo_postal
+        self._regimen_fiscal = regimen_fiscal
+        self._color = color
+        self._logo = logo
+
+    @property
+    def rfc(self):
+        return self._rfc
+
+    @rfc.setter
+    def rfc(self, rfc):
+        self._rfc = rfc
+
+    @property
+    def razon_social(self):
+        return self._razon_social
+
+    @razon_social.setter
+    def razon_social(self, razon_social):
+        self._razon_social = razon_social
+
+    @property
+    def calle_numero(self):
+        return self._calle_numero
+
+    @calle_numero.setter
+    def calle_numero(self, calle_numero):
+        self._calle_numero = calle_numero
+
+    @property
+    def colonia(self):
+        return self._colonia
+
+    @colonia.setter
+    def colonia(self, colonia):
+        self._colonia = colonia
+
+    @property
+    def ciudad(self):
+        return self._ciudad
+
+    @ciudad.setter
+    def ciudad(self, ciudad):
+        self._ciudad = ciudad
+
+    @property
+    def estado_pais(self):
+        return self._estado_pais
+
+    @estado_pais.setter
+    def estado_pais(self, estado_pais):
+        self._estado_pais = estado_pais
+
+    @property
+    def codigo_postal(self):
+        return self._codigo_postal
+
+    @codigo_postal.setter
+    def codigo_postal(self, codigo_postal):
+        self._codigo_postal = codigo_postal
+
+    @property
+    def regimen_fiscal(self):
+        return self._regimen_fiscal
+
+    @regimen_fiscal.setter
+    def regimen_fiscal(self, regimen_fiscal):
+        self._regimen_fiscal = regimen_fiscal
+
+    @property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, color):
+        self._color = color
+
+    @property
+    def logo(self):
+        return self._logo
+
+    @logo.setter
+    def logo(self, logo):
+        self._logo = logo
