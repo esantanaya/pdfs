@@ -1,8 +1,7 @@
 import os
 import re
-from lxml import etree as ET
 
-import qrcode
+from lxml import etree as ET
 from pagos import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
                    Receptor, TimbreFiscalDigital)
 
@@ -50,7 +49,8 @@ def leer_archivos(archivo):
                 if grandchild.tag == f'{ns_tfd}TimbreFiscalDigital':
                     str_timbre = ET.tostring(grandchild)
                     xdoc = ET.fromstring(str_timbre)
-                    xslt = ET.parse('recursos\\xslt\\cadenaoriginal_TFD_1_1.xslt')
+                    xslt = ET.parse(
+                        'recursos\\xslt\\cadenaoriginal_TFD_1_1.xslt')
                     trans = ET.XSLT(xslt)
                     doc = trans(xdoc)
                     timbre = TimbreFiscalDigital(
@@ -109,7 +109,14 @@ def leer_archivos(archivo):
             timbre,
         )
 
-    ruta_f33 = ['recursos', 'ACA080131IL5-01-UA29001-RH00417.F33']
+    ruta_f33 = [
+        'CFD',
+        'Intercambio',
+        'Procesado',
+        'ACE050912GZ0',
+        '022018',
+        'ACE050912GZ0-02-UA29005-RC00177.F33',
+    ]
     archivo_f33 = os.sep.join(ruta_f33)
 
     with open(archivo_f33, 'r') as f33:
@@ -124,12 +131,6 @@ def leer_archivos(archivo):
     comprobante.receptor.estado = lineas['CLIENTE'][11]
     comprobante.receptor.pais = lineas['CLIENTE'][12]
     comprobante.receptor.codigo_postal = lineas['CLIENTE'][7]
-
-    img = qrcode.make(
-        f'?re={comprobante.emisor.rfc}&rr={comprobante.receptor.rfc}' +
-        '&tt={comprobante.total}&id={comprobante.timbre.uuid}'
-    )
-    img.save(f'{comprobante.emisor.rfc}.png', format='png')
 
     return comprobante
 
