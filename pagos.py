@@ -1,6 +1,7 @@
 class Comprobante:
     def __init__(
         self,
+        nombre_archivo,
         no_certificado,
         fecha,
         folio,
@@ -19,6 +20,7 @@ class Comprobante:
         timbre=None,
         total_letra=None,
     ):
+        self._nombre_archivo = nombre_archivo
         self._no_certificado = no_certificado
         self._fecha = fecha
         self._folio = folio
@@ -36,6 +38,14 @@ class Comprobante:
         self._pagos = pagos
         self._timbre = timbre
         self._total_letra = total_letra
+
+    @property
+    def nombre_archivo(self):
+        return self._nombre_archivo
+
+    @nombre_archivo.setter
+    def nombre_archivo(self, nombre_archivo):
+        self._nombre_archivo = nombre_archivo
 
     @property
     def no_certificado(self):

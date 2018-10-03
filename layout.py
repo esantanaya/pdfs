@@ -3,7 +3,8 @@ from reportlab.lib.units import mm
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.graphics.shapes import Rect, Drawing
 from reportlab.graphics.barcode import qr
-from reportlab.lib.colors import Color, red
+from reportlab.graphics import renderPDF
+from reportlab.lib.colors import Color, red, black
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import (
     SimpleDocTemplate, PageTemplate, Frame, Paragraph, Spacer, Table, TableStyle
@@ -12,16 +13,37 @@ from os import startfile
 
 
 def primera_hoja(canvas, document):
+    canvas.setAuthor('Enrique Santana')
+    canvas.setTitle('Representación impresa CFDI')
+    canvas.setSubject('Complemento de Pago')
+    canvas.setCreator('ReportLab')
     cabecera = Frame(
         7.0556*mm,
         207.38*mm,
         width=201.88*mm,
         height=64.56*mm,
         id='Cabecera',
-        # showBoundary=True,
         leftPadding=43.6956*mm
     )
-    flowables = []
+    detalle = Frame(
+        7.0556*mm,
+        87.01*mm,
+        width=201.88*mm,
+        height=119.94*mm,
+        id='Detalle',
+    )
+    pie = Frame(
+        7.0556*mm,
+        13.99*mm,
+        width=201.79*mm,
+        height=71.96*mm,
+        id="Pie",
+        leftPadding=0,
+        showBoundary=1,
+    )
+    flowables_cabecera = []
+    flowables_detalles = []
+    flowables_pie = []
     styles = getSampleStyleSheet()
     small = ParagraphStyle('Pequeña')
     small.fontSize = 7
@@ -31,15 +53,203 @@ def primera_hoja(canvas, document):
     datos_emisor = '''
         <b>ALECSA CAMIONES Y AUTOBUSES S DE RL DE CV</b><br/>
         AV. 5 DE FEBRERO 1708 <br/>
-        ZONA INDUSTRIAL BENITO JUAREZ <br/>
+        COL. ZONA INDUSTRIAL BENITO JUAREZ <br/>
         QUERETARO <br/>
         QUERETARO, MEXICO <br/>
-        76120 <br/>
+        C.P. 76120 <br/>
+        R.F.C. ACA080131IL5 <br/>
+        Regímen fiscal: 601
     '''
     titulos_receptor = [[
-        'Receptor del comprobante',
-        'Clave:', 'C100381',
+        'Receptor del comprobante', 'Clave:', 'C100381',
     ]]
+    lista_detalle = [
+        [
+            'Pago correspondiente a: Folio Fiscal',
+            'Folio y Serie',
+            'Moneda',
+            'Met. Pago',
+            'N° Parc.',
+            'Saldo Ant.',
+            'Imp. Pagado',
+            'Saldo Insoluto',
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+        [
+            '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
+            'AA1119',
+            'MXN',
+            'PPD',
+            '1',
+            '783,232.00',
+            '150,000.00',
+            '633,232.00'
+        ],
+    ]
+    estilo_tabla_detalle = TableStyle([
+        ('SIZE', (0, 0), (-1, -1), 8.5),
+        ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold')
+    ])
     datos_receptor = '''
         <font size=8>GALLETAS JUANITA SA DE CV</font><br/><br/>
         CALLE NARCISO MENDOZA SIN NUMERO INT SIN NUMERO<br/>
@@ -50,7 +260,7 @@ def primera_hoja(canvas, document):
         R.F.C. GJU040820HU2<br/>
     '''
 
-    titulo_comprobante = 'FACTURA'
+    titulo_comprobante = 'RECIBO'
     serie_folio = 'RH-00417'
     fecha_emision = '2018-08-01T19:08:09'
     serie_cert_emisor = '00001000000403775746'
@@ -75,6 +285,19 @@ def primera_hoja(canvas, document):
         ['Lugar expedición'],
         [lugar_expedicion],
     ]
+
+    info_extra = [
+        ['CIENTO CINCUENTA MIL PESOS 00/100 M.N.', '', '', ''],
+        ['Forma de pago:', '03 Transferencia electrónica de fondos', '', ''],
+        ['Método de pago:', 'PPD Pago en parcialidades o diferido', 'Número de cuenta:', '0199713662'],
+        ['Condiciones:', '', '', ''],
+    ]
+
+    info_totales = [
+        ['Subtotal:', '$129,310.34'],
+        ['Subtotal:', '$129,310.34'],
+    ]
+
     estilo_tabla_doc = TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
@@ -82,6 +305,12 @@ def primera_hoja(canvas, document):
         ('SIZE', (0, 7), (0, 7), 6),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('TOPPADDING', (0, 7), (0, 7), 8),
+    ])
+    estilo_tabla_info = TableStyle([
+        ('SIZE', (0, 0), (-1, -1), 8),
+        ('BOX', (0, 0), (-1, -1), 0.25, black),
+        ('INNERGRID', (0, 0), (-1, -1), 0.25, black),
+        ('SPAN', (0, 0), (3, 0)),
     ])
 
     canvas.saveState()
@@ -105,9 +334,12 @@ def primera_hoja(canvas, document):
     canvas.roundRect(7.0556*mm, 13.99*mm, 201.79*mm, 54.50*mm, 5)
     canvas.line(7.0556*mm, 13.10*mm, 208.8456*mm, 13.10*mm)
 
+    #Cabecera
     para_emisor = Paragraph(datos_emisor, styles['Normal'])
-    flowables.append(para_emisor)
-    flowables.append(Spacer(0,15*mm))
+    para_emisor.wrapOn(canvas, 106*mm, 31*mm)
+    para_emisor.drawOn(canvas, 54.55*mm, 240.04*mm)
+    # flowables_cabecera.append(para_emisor)
+    flowables_cabecera.append(Spacer(0,36*mm))
     titulos = Table(
         titulos_receptor,
         colWidths=[
@@ -125,9 +357,34 @@ def primera_hoja(canvas, document):
     tabla_documento.wrapOn(canvas, 0, 0)
     tabla_documento.drawOn(canvas, 162.9856*mm, 207.58*mm)
     para_receptor = Paragraph(datos_receptor, small)
-    flowables.append(para_receptor)
+    flowables_cabecera.append(para_receptor)
     canvas.drawString(178.06*mm, 7.0556*mm,  f'Página {document.page}')
-    cabecera.addFromList(flowables, canvas)
+    cabecera.addFromList(flowables_cabecera, canvas)
+
+    #Detalle
+    tabla_detalle = Table(lista_detalle)
+    tabla_detalle.setStyle(estilo_tabla_detalle)
+    flowables_detalles.append(tabla_detalle)
+    detalle.addFromList(flowables_detalles, canvas)
+
+    #Pie
+    tabla_pie = Table(info_extra)
+    tabla_pie.setStyle(estilo_tabla_info)
+    flowables_pie.append(tabla_pie)
+    pie.addFromList(flowables_pie, canvas)
+
+    #QR
+    qr_code = qr.QrCodeWidget(
+        f'?re=ACA080131IL5&rr=RLI051025J88&tt=6005.390000'
+        + f'&id=09E1D1B8-44F5-47AD-B3FC-0762B179CF7D'
+    )
+    qr_code.barWidth = 30*mm
+    qr_code.barHeight = 30*mm
+    qr_code.qrVersion = 1
+    d = Drawing()
+    d.add(qr_code)
+    renderPDF.draw(d, canvas, 8*mm, 33.35*mm)
+
     #Líneas Grises punteadas
     canvas.setStrokeColorRGB(.80, .80, .80)#Gris Claro
     canvas.setDash([0.5*mm,0.5*mm], 0)
@@ -143,7 +400,6 @@ def primera_hoja(canvas, document):
     #Líneas Grises punteadas Detalle
     canvas.line(7.0556*mm, 199.37*mm, 208.8456*mm, 199.37*mm)
 
-
     canvas.restoreState()
 
 
@@ -158,7 +414,7 @@ def define_layout(logo=None, comprobante=None):
     )
     styles = getSampleStyleSheet()
     flowables = []
-    p = Paragraph('Hola Mundo', styles['Normal'])
+    p = Paragraph('', styles['Normal'])
     flowables.append(p)
 
     documento.build(flowables, onFirstPage=primera_hoja)
