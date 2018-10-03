@@ -1,4 +1,3 @@
-# TODO: Agregar el frame de los totales y su flowable
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import mm
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -53,15 +52,27 @@ def primera_hoja(canvas, document):
         topPadding=0,
         bottomPadding=0,
     )
+    frame_pie_info = Frame(
+        38.3256*mm,
+        13.99*mm,
+        width=170.52*mm,
+        height=54.50*mm,
+        id='PieInfo',
+        leftPadding=0,
+        topPadding=0,
+        bottomPadding=0,
+    )
     flowables_cabecera = []
     flowables_detalles = []
     flowables_pie_datos = []
     flowables_pie_totales = []
+    flowables_pie_info = []
     styles = getSampleStyleSheet()
     small = ParagraphStyle('Pequeña')
     small.fontSize = 7
     small.leading = 7
-    small.leftIndent = -120
+    small.splitLongWords = True
+    small.spaceShrinkage = 0.05
 
     datos_emisor = '''
         <b>ALECSA CAMIONES Y AUTOBUSES S DE RL DE CV</b><br/>
@@ -298,16 +309,40 @@ def primera_hoja(canvas, document):
         ['Lugar expedición'],
         [lugar_expedicion],
     ]
-
     info_extra = [
         ['CIENTO CINCUENTA MIL PESOS 00/100 M.N.', '', '', ''],
         ['Forma de pago:', '03 Transferencia electrónica de fondos', '', ''],
         ['Método de pago:', 'PPD Pago en parcialidades o diferido', 'Número de cuenta:', '0199713662'],
         ['Condiciones:', '', '', ''],
     ]
-
     info_totales = [
         ['Total:', '$150,000.00'],
+    ]
+    info_info = [
+        ['Sello digital del CFDI:'],
+        [Paragraph('JZC9GYMrfJVZU6syt6BjP7xhKdHksWkiL5fxWykpDaKp1aM35PCSZbdOLr'
+            +'64VYPU+KGebWusMZVH8jeTez13wZBm2Bj/m2dlTdxC34BYOzCEIVqFQZ45JEAsW63'
+            +'lq/Y6Yf2pHxtKit0Nf+k/F5wxH51g0zd9cgr2bxq+8YuH0lNgJMOoVy1gLSJCPyW1'
+            +'ROsuMvncoVFLTy4SrOiUt+U2EBzLIyG50MGf7+w8YV+FJ+eKsk/kfIdHT/Nwn+oBG'
+            +'9++cpNBo8EDtAZDQk9y', small
+        )],
+        ['Sello del SAT:'],
+        [Paragraph('hWPZqNXnAXtTsgZYIC3Rv4fDa9itCRM0Hxvv966CrVWbVku7VeOBGs2l+x'
+            +'Q4S4zTgp9T7FEFAkO93qB/IxreA/hvRkStbW2bGwC5jhxkgh7MlCbiVkHMrSTwZe'
+            +'w1Wt3ZSU+zCpts0J2hl2f0fVlF/piQOs9R2FvoiPD1S+ZkrEORStX3Fn9IxlD0lI'
+            +'3Azu4DQqJg1VtyZADXxCaikYm9Z5OV7ycDN3PeKpwODm7l12LblAQIAXyVV2tUhj'
+            +'uJ07wzjEHWX0rT3ayFTepfQUYg', small
+        )],
+        ['Cadena original del complemento de certificación digital del SAT:'],
+        [Paragraph('||1.1|1E399AAF-002A-4C84-A00E-74C0718FAF51|2018-08-01T19:08'
+            +':44Z|TLE011122SC2|JZC9GYMrfJVZU6syt6BjP7xhKdHksWkiL5fxWykpDaKp1aM'
+            +'35PCSZbdOLr64VYPU+KGebWusMZVH8jeTez13wZBm2Bj/m2dlTdxC34BYOzCEIVqF'
+            +'QZ45JEAsW63lq/Y6Yf2pHxtKit0Nf+k/F5wxH51g0zd9cgr2bxq+8YuH0lNgJMOoV'
+            +'y1gLSJCPyW1ROsuMvncoVFLTy4SrOiUt+U2EBzLIyG50MGf7+w8YV+FJ+eKsk/kfI'
+            +'dHT/Nwn+oBG9++cpNBo8EDtAZDQk9yvZUILogLsR0QF+0P5oo4L7vnk077JrfNQ8v'
+            +'kdBgvQI17USKf0mTeJihIsXw2U6F0zQDwzQ==|00001000000404512308||',
+            small
+        )],
     ]
 
     estilo_tabla_doc = TableStyle([
@@ -325,6 +360,10 @@ def primera_hoja(canvas, document):
     ])
     estilo_tabla_totales = TableStyle([
         ('ALIGN', (0, 0), (0, 0), 'RIGHT'),
+    ])
+    estilo_tabla_info_qr = TableStyle([
+        ('SIZE', (0, 0), (-1, -1), 8),
+        ('LEADING', (0, 0), (-1, -1), 5.7),
     ])
 
     canvas.saveState()
@@ -352,7 +391,6 @@ def primera_hoja(canvas, document):
     para_emisor = Paragraph(datos_emisor, styles['Normal'])
     para_emisor.wrapOn(canvas, 106*mm, 31*mm)
     para_emisor.drawOn(canvas, 54.55*mm, 240.04*mm)
-    # flowables_cabecera.append(para_emisor)
     flowables_cabecera.append(Spacer(0,36*mm))
     titulos = Table(
         titulos_receptor,
@@ -371,7 +409,8 @@ def primera_hoja(canvas, document):
     tabla_documento.wrapOn(canvas, 0, 0)
     tabla_documento.drawOn(canvas, 162.9856*mm, 207.58*mm)
     para_receptor = Paragraph(datos_receptor, small)
-    flowables_cabecera.append(para_receptor)
+    para_receptor.wrapOn(canvas, 155.22*mm, 26.28*mm)
+    para_receptor.drawOn(canvas, 7.5*mm, 212.58*mm)
     canvas.drawString(178.06*mm, 7.0556*mm,  f'Página {document.page}')
     cabecera.addFromList(flowables_cabecera, canvas)
 
@@ -406,6 +445,14 @@ def primera_hoja(canvas, document):
     tabla_totales.hAlign = 'LEFT'
     flowables_pie_totales.append(tabla_totales)
     frame_pie_totales.addFromList(flowables_pie_totales, canvas)
+
+    tabla_info = Table(
+        info_info,
+        colWidths=170.52*mm,
+    )
+    tabla_info.setStyle(estilo_tabla_info_qr)
+    flowables_pie_info.append(tabla_info)
+    frame_pie_info.addFromList(flowables_pie_info, canvas)
 
     #QR
     qr_code = qr.QrCodeWidget(
