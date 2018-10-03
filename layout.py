@@ -1,3 +1,4 @@
+# TODO: Agregar el frame de los totales y su flowable
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import mm
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -32,18 +33,30 @@ def primera_hoja(canvas, document):
         height=119.94*mm,
         id='Detalle',
     )
-    pie = Frame(
+    frame_pie_datos = Frame(
         7.0556*mm,
-        13.99*mm,
-        width=201.79*mm,
-        height=71.96*mm,
-        id="Pie",
+        69.02*mm,
+        width=144.64*mm,
+        height=16.93*mm,
+        id="PieDatos",
         leftPadding=0,
-        showBoundary=1,
+        topPadding=0,
+        bottomPadding=0,
+    )
+    frame_pie_totales = Frame(
+        152.3256*mm,
+        69.02*mm,
+        width=56.44*mm,
+        height=16.93*mm,
+        id='PieTotales',
+        leftPadding=0,
+        topPadding=0,
+        bottomPadding=0,
     )
     flowables_cabecera = []
     flowables_detalles = []
-    flowables_pie = []
+    flowables_pie_datos = []
+    flowables_pie_totales = []
     styles = getSampleStyleSheet()
     small = ParagraphStyle('Pequeña')
     small.fontSize = 7
@@ -294,8 +307,7 @@ def primera_hoja(canvas, document):
     ]
 
     info_totales = [
-        ['Subtotal:', '$129,310.34'],
-        ['Subtotal:', '$129,310.34'],
+        ['Total:', '$150,000.00'],
     ]
 
     estilo_tabla_doc = TableStyle([
@@ -308,9 +320,11 @@ def primera_hoja(canvas, document):
     ])
     estilo_tabla_info = TableStyle([
         ('SIZE', (0, 0), (-1, -1), 8),
-        ('BOX', (0, 0), (-1, -1), 0.25, black),
-        ('INNERGRID', (0, 0), (-1, -1), 0.25, black),
+        ('LEADING', (0, 0), (-1, -1), 5.7),
         ('SPAN', (0, 0), (3, 0)),
+    ])
+    estilo_tabla_totales = TableStyle([
+        ('ALIGN', (0, 0), (0, 0), 'RIGHT'),
     ])
 
     canvas.saveState()
@@ -368,10 +382,30 @@ def primera_hoja(canvas, document):
     detalle.addFromList(flowables_detalles, canvas)
 
     #Pie
-    tabla_pie = Table(info_extra)
+    tabla_pie = Table(
+        info_extra,
+        colWidths=[
+            25.41*mm,
+            65.99*mm,
+            28.23*mm,
+            25*mm,
+        ]
+    )
     tabla_pie.setStyle(estilo_tabla_info)
-    flowables_pie.append(tabla_pie)
-    pie.addFromList(flowables_pie, canvas)
+    tabla_pie.vAlign = 'TOP'
+    tabla_pie.hAlign = 'LEFT'
+    flowables_pie_datos.append(tabla_pie)
+    frame_pie_datos.addFromList(flowables_pie_datos, canvas)
+
+    tabla_totales = Table(
+        info_totales,
+        colWidths=[32.59*mm, 23.85*mm]
+    )
+    tabla_totales.setStyle(estilo_tabla_totales)
+    tabla_totales.vAlign = 'TOP'
+    tabla_totales.hAlign = 'LEFT'
+    flowables_pie_totales.append(tabla_totales)
+    frame_pie_totales.addFromList(flowables_pie_totales, canvas)
 
     #QR
     qr_code = qr.QrCodeWidget(
@@ -383,7 +417,7 @@ def primera_hoja(canvas, document):
     qr_code.qrVersion = 1
     d = Drawing()
     d.add(qr_code)
-    renderPDF.draw(d, canvas, 8*mm, 33.35*mm)
+    renderPDF.draw(d, canvas, 8*mm, 37*mm)
 
     #Líneas Grises punteadas
     canvas.setStrokeColorRGB(.80, .80, .80)#Gris Claro
