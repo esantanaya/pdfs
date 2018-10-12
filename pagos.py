@@ -185,10 +185,25 @@ class Comprobante:
 
 
 class Emisor:
-    def __init__(self, nombre, regimen_fiscal, rfc):
+    def __init__(
+        self,
+        nombre,
+        regimen_fiscal,
+        rfc,
+        calle_numero=None,
+        colonia=None,
+        ciudad=None,
+        estado_pais=None,
+        codigo_postal=None,
+    ):
         self._nombre = nombre
         self._regimen_fiscal = regimen_fiscal
         self._rfc = rfc
+        self._calle_numero = calle_numero
+        self._colonia = colonia
+        self._ciudad = ciudad
+        self._estado_pais = estado_pais
+        self._codigo_postal = codigo_postal
 
     @property
     def nombre(self):
@@ -213,6 +228,47 @@ class Emisor:
     @rfc.setter
     def rfc(self, rfc):
         self._rfc = rfc
+
+    @property
+    def calle_numero(self):
+        return self._calle_numero
+
+    @calle_numero.setter
+    def calle_numero(self, calle_numero):
+        self._calle_numero = calle_numero
+
+    @property
+    def colonia(self):
+        return self._colonia
+
+    @colonia.setter
+    def colonia(self, colonia):
+        self._colonia = colonia
+
+    @property
+    def ciudad(self):
+        return self._ciudad
+
+    @ciudad.setter
+    def ciudad(self, ciudad):
+        self._ciudad = ciudad
+
+    @property
+    def estado_pais(self):
+        return self._estado_pais
+
+    @estado_pais.setter
+    def estado_pais(self, estado_pais):
+        self._estado_pais = estado_pais
+
+    @property
+    def codigo_postal(self):
+        return self._codigo_postal
+
+    @codigo_postal.setter
+    def codigo_postal(self, codigo_postal):
+        self._codigo_postal = codigo_postal
+
 
 
 class Receptor:
