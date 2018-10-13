@@ -65,6 +65,7 @@ class ImpresionPagos:
         canvas.setCreator('ReportLab')
         emisor = self._comprobante.emisor
         receptor = self._comprobante.receptor
+        rojo, verde, azul = self._codigo_color_lineas[1:-1].split(',')
         cabecera = Frame(
             7.0556 * mm,
             207.38 * mm,
@@ -126,7 +127,7 @@ class ImpresionPagos:
         ]]
         datos_receptor = (f'<font size=8>{receptor.nombre}</font><br/><br/>'
             + f'{receptor.calle}<br/>{receptor.colonia}<br/>'
-            + f'{receptor.colonia}<br/>{receptor.estado}, {receptor.pais}<br/>'
+            + f'{receptor.municipio}<br/>{receptor.estado}, {receptor.pais}<br/>'
             + f'C.P. {receptor.codigo_postal}<br/>R.F.C. {receptor.rfc}<br/>')
 
         titulo_comprobante = 'RECIBO'
@@ -156,12 +157,12 @@ class ImpresionPagos:
         ]
         info_extra = [
             [self._comprobante.total_letra, '', '', ''],
-            ['Forma de pago:', '', '', ''],
+            ['Forma de pago:', self._comprobante.pagos[0].forma_pago_p, '', ''],
             ['', '', '', ''],
             ['Condiciones:', '', '', ''],
         ]
         info_totales = [
-            ['Total:', f'${self._comprobante.total}'],
+            ['Total:', f'${self._comprobante.pagos[0].monto}'],
         ]
         info_info = [
             ['Sello digital del CFDI:'],
@@ -172,6 +173,9 @@ class ImpresionPagos:
             [Paragraph(self._comprobante.timbre.cadena_original, small)],
         ]
 
+        estilo_tabla_titulos = TableStyle([
+            ('LEFTPADDING', (1, 0), (-1, -1), 4),
+        ])
         estilo_tabla_doc = TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
@@ -202,7 +206,7 @@ class ImpresionPagos:
             height=32.10 * mm
         )
         # Marcos
-        canvas.setStrokeColorRGB(1, .208, .149)  # Rojo
+        canvas.setStrokeColorRGB(float(rojo), float(verde), float(azul))
         # Marcos Cabecera
         canvas.roundRect(7.0556 * mm, 207.58 * mm, 155.22 * mm, 32.46 * mm, 5)
         canvas.roundRect(162.9856 * mm, 207.58 * mm, 45.86 * mm, 64.56 * mm, 5)
@@ -223,8 +227,9 @@ class ImpresionPagos:
             titulos_receptor,
             colWidths=[
                 128.94 * mm, 11.29 * mm, 15.522 * mm
-            ]
+            ],
         )
+        titulos.setStyle(estilo_tabla_titulos)
         titulos.wrapOn(canvas, 0, 0)
         titulos.drawOn(canvas, 6 * mm, 233.86 * mm)
         tabla_documento = Table(
@@ -356,7 +361,7 @@ class ImpresionPagos:
             repeatRows=1,
         )
         estilo_tabla_detalle = TableStyle([
-            ('SIZE', (0, 0), (-1, -1), 8.5),
+            ('SIZE', (0, 0), (-1, -1), 9),
             ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold')
         ])
