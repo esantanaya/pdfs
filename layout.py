@@ -23,6 +23,38 @@ class ImpresionPagos:
         self._archivo_logo = ''
         self._codigo_color_lineas = ''
 
+    @property
+    def comprobante(self):
+        return self._comprobante
+
+    @comprobante.setter
+    def comprobante(self, comprobante):
+        self._comprobante = comprobante
+
+    @property
+    def ruta_logos(self):
+        return self._ruta_logos
+
+    @ruta_logos.setter
+    def ruta_logos(self, ruta_logos):
+        self._ruta_logos = ruta_logos
+
+    @property
+    def archivo_logo(self):
+        return self._archivo_logo
+
+    @archivo_logo.setter
+    def archivo_logo(self, archivo_logo):
+        self._archivo_logo = archivo_logo
+
+    @property
+    def codigo_color_lineas(self):
+        return self._codigo_color_lineas
+
+    @codigo_color_lineas.setter
+    def codigo_color_lineas(self, codigo_color_lineas):
+        self._codigo_color_lineas = codigo_color_lineas
+
 
     def _lee_ini(self):
         with open('layout.ini') as config:
@@ -115,18 +147,19 @@ class ImpresionPagos:
         small.splitLongWords = True
         small.spaceShrinkage = 0.05
 
-        datos_emisor = (f'<b>{emisor.nombre}</b><br/> '
-            + f'{emisor.calle_numero}<br/>{emisor.colonia}<br/> '
-            + f'{emisor.ciudad}<br/>{emisor.estado_pais}<br/> '
-            + f'C.P. {emisor.codigo_postal}<br/> R.F.C. {emisor.rfc}<br/> '
-            + f'Regímen fiscal: {emisor.regimen_fiscal}')
+        datos_emisor = (f'<b>{emisor.nombre}</b><br/>'
+            + f'<para leading=8><font size=8>{emisor.calle_numero}<br/>'
+            + f'COL. {emisor.colonia}<br/>'
+            + f'{emisor.ciudad}<br/>{emisor.estado_pais}<br/>'
+            + f'C.P. {emisor.codigo_postal}<br/> R.F.C. {emisor.rfc}<br/>'
+            + f'Regímen fiscal: {emisor.regimen_fiscal}</font>')
 
         titulos_receptor = [[
             'Receptor del comprobante', 'Clave:',
             self._comprobante.receptor.clave,
         ]]
         datos_receptor = (f'<font size=8>{receptor.nombre}</font><br/><br/>'
-            + f'{receptor.calle}<br/>{receptor.colonia}<br/>'
+            + f'{receptor.calle}<br/>COL. {receptor.colonia}<br/>'
             + f'{receptor.municipio}<br/>{receptor.estado}, {receptor.pais}<br/>'
             + f'C.P. {receptor.codigo_postal}<br/>R.F.C. {receptor.rfc}<br/>')
 
@@ -221,7 +254,7 @@ class ImpresionPagos:
         # Cabecera
         para_emisor = Paragraph(datos_emisor, styles['Normal'])
         para_emisor.wrapOn(canvas, 106 * mm, 31 * mm)
-        para_emisor.drawOn(canvas, 54.55 * mm, 240.04 * mm)
+        para_emisor.drawOn(canvas, 49.55 * mm, 247 * mm)
         flowables_cabecera.append(Spacer(0, 36 * mm))
         titulos = Table(
             titulos_receptor,
@@ -309,9 +342,9 @@ class ImpresionPagos:
         canvas.restoreState()
 
 
-    def _define_layout(self, comprobante=None):
+    def _define_layout(self):
         documento = SimpleDocTemplate(
-            'test.pdf',
+            self._comprobante.nombre_archivo[:-4]+'.pdf',
             pagesize=letter,
             rightMargin=7.0556 * mm,
             leftMargin=7.0556 * mm,
