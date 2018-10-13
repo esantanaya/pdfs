@@ -270,7 +270,6 @@ class Emisor:
         self._codigo_postal = codigo_postal
 
 
-
 class Receptor:
 
     def __init__(

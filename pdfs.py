@@ -91,6 +91,7 @@ def leer_archivos(archivo):
 
     if root.tag == f'{ns_cfdi}Comprobante':
         comprobante = Comprobante(
+            archivo,
             root.attrib['NoCertificado'],
             root.attrib['Fecha'],
             root.attrib['Folio'],
@@ -109,13 +110,14 @@ def leer_archivos(archivo):
             timbre,
         )
 
+    # TODO: Hacer esto programable
     ruta_f33 = [
         'CFD',
         'Intercambio',
         'Procesado',
-        'ACE050912GZ0',
-        '022018',
-        'ACE050912GZ0-02-UA29005-RC00177.F33',
+        f'{emisor.rfc}',
+        '082018',
+        f'{emisor.rfc}-{archivo[:-4]}.F33',
     ]
     archivo_f33 = os.sep.join(ruta_f33)
 

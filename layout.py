@@ -1,4 +1,6 @@
 from os import startfile
+from re import match
+from os import sep
 
 from reportlab.graphics import renderPDF
 from reportlab.graphics.barcode import qr
@@ -17,6 +19,43 @@ from pagos import Comprobante
 class ImpresionPagos:
     def __init__(self, comprobante):
         self._comprobante = comprobante
+        self._ruta_logos = ''
+        self._archivo_logo = ''
+        self._codigo_color_lineas = ''
+
+
+    def _lee_ini(self):
+        with open('layout.ini') as config:
+            bandera = ''
+            for linea in config:
+                linea = linea.strip()
+                if linea.startswith('[') and linea.endswith(']'):
+                    titulo = linea[1:-1]
+                    if titulo == 'Configuracion':
+                        bandera = 'conf'
+                    elif match(r'^[A-ZÑ&]{3,4}\d{6}[A-Z\d]{3}', titulo):
+                        bandera = 'emisor'
+                elif '=' in linea:
+                    llave, valor = linea.split('=')
+                    if bandera == 'conf':
+                        if llave == 'ruta_logos':
+                            self._ruta_logos = valor.split('|')
+                    elif (bandera == 'emisor'
+                        and titulo == self._comprobante.emisor.rfc):
+                        if llave == 'CN':
+                            self._comprobante.emisor.calle_numero = valor
+                        elif llave == 'C':
+                            self._comprobante.emisor.colonia = valor
+                        elif llave == 'CD':
+                            self._comprobante.emisor.ciudad = valor
+                        elif llave == 'EP':
+                            self._comprobante.emisor.estado_pais = valor
+                        elif llave == 'CP':
+                            self._comprobante.emisor.codigo_postal = valor
+                        elif llave == 'LG':
+                            self._archivo_logo = valor
+                        elif llave == 'CL':
+                            self._codigo_color_lineas = valor
 
 
     def _primera_hoja(self, canvas, document):
@@ -24,6 +63,8 @@ class ImpresionPagos:
         canvas.setTitle('Representación impresa CFDI')
         canvas.setSubject('Complemento de Pago')
         canvas.setCreator('ReportLab')
+        emisor = self._comprobante.emisor
+        receptor = self._comprobante.receptor
         cabecera = Frame(
             7.0556 * mm,
             207.38 * mm,
@@ -73,37 +114,29 @@ class ImpresionPagos:
         small.splitLongWords = True
         small.spaceShrinkage = 0.05
 
-        datos_emisor = '''
-            <b>ALECSA CAMIONES Y AUTOBUSES S DE RL DE CV</b><br/>
-            AV. 5 DE FEBRERO 1708 <br/>
-            COL. ZONA INDUSTRIAL BENITO JUAREZ <br/>
-            QUERETARO <br/>
-            QUERETARO, MEXICO <br/>
-            C.P. 76120 <br/>
-            R.F.C. ACA080131IL5 <br/>
-            Regímen fiscal: 601
-        '''
+        datos_emisor = (f'<b>{emisor.nombre}</b><br/> '
+            + f'{emisor.calle_numero}<br/>{emisor.colonia}<br/> '
+            + f'{emisor.ciudad}<br/>{emisor.estado_pais}<br/> '
+            + f'C.P. {emisor.codigo_postal}<br/> R.F.C. {emisor.rfc}<br/> '
+            + f'Regímen fiscal: {emisor.regimen_fiscal}')
+
         titulos_receptor = [[
-            'Receptor del comprobante', 'Clave:', 'C100381',
+            'Receptor del comprobante', 'Clave:',
+            self._comprobante.receptor.clave,
         ]]
-        datos_receptor = '''
-            <font size=8>GALLETAS JUANITA SA DE CV</font><br/><br/>
-            CALLE NARCISO MENDOZA SIN NUMERO INT SIN NUMERO<br/>
-            COL. AMPLIACION SAN PEDRO ATZOMPA<br/>
-            TECAMAC<br/>
-            ESTADO DE MEXICO, MEX<br/>
-            C.P. 55770<br/>
-            R.F.C. GJU040820HU2<br/>
-        '''
+        datos_receptor = (f'<font size=8>{receptor.nombre}</font><br/><br/>'
+            + f'{receptor.calle}<br/>{receptor.colonia}<br/>'
+            + f'{receptor.colonia}<br/>{receptor.estado}, {receptor.pais}<br/>'
+            + f'C.P. {receptor.codigo_postal}<br/>R.F.C. {receptor.rfc}<br/>')
 
         titulo_comprobante = 'RECIBO'
-        serie_folio = 'RH-00417'
-        fecha_emision = '2018-08-01T19:08:09'
-        serie_cert_emisor = '00001000000403775746'
-        uuid = '1E399AAF-002A-4C84-A00E-74C0718FAF51'
-        serie_cert_sat = '00001000000404512308'
-        fecha_hora_cert = '2018-08-01T19:08:44'
-        lugar_expedicion = '76120'
+        serie_folio = f'{self._comprobante.serie}-{self._comprobante.folio}'
+        fecha_emision = self._comprobante.fecha
+        serie_cert_emisor = self._comprobante.no_certificado
+        uuid = self._comprobante.timbre.uuid
+        serie_cert_sat = self._comprobante.timbre.no_certificado_sat
+        fecha_hora_cert = self._comprobante.timbre.fecha_timbrado
+        lugar_expedicion = self._comprobante.lugar_expedicion
 
         titulos_documento = [
             [titulo_comprobante],
@@ -122,40 +155,21 @@ class ImpresionPagos:
             [lugar_expedicion],
         ]
         info_extra = [
-            ['CIENTO CINCUENTA MIL PESOS 00/100 M.N.', '', '', ''],
-            ['Forma de pago:', '03 Transferencia electrónica de fondos', '', ''],
-            ['Método de pago:', 'PPD Pago en parcialidades o diferido',
-                'Número de cuenta:', '0199713662'],
+            [self._comprobante.total_letra, '', '', ''],
+            ['Forma de pago:', '', '', ''],
+            ['', '', '', ''],
             ['Condiciones:', '', '', ''],
         ]
         info_totales = [
-            ['Total:', '$150,000.00'],
+            ['Total:', f'${self._comprobante.total}'],
         ]
         info_info = [
             ['Sello digital del CFDI:'],
-            [Paragraph('JZC9GYMrfJVZU6syt6BjP7xhKdHksWkiL5fxWykpDaKp1aM35PCSZbdOLr'
-                       + '64VYPU+KGebWusMZVH8jeTez13wZBm2Bj/m2dlTdxC34BYOzCEIVqFQZ45JEAsW63'
-                       + 'lq/Y6Yf2pHxtKit0Nf+k/F5wxH51g0zd9cgr2bxq+8YuH0lNgJMOoVy1gLSJCPyW1'
-                       + 'ROsuMvncoVFLTy4SrOiUt+U2EBzLIyG50MGf7+w8YV+FJ+eKsk/kfIdHT/Nwn+oBG'
-                       + '9++cpNBo8EDtAZDQk9y', small
-                       )],
+            [Paragraph(self._comprobante.timbre.sello_cfd, small)],
             ['Sello del SAT:'],
-            [Paragraph('hWPZqNXnAXtTsgZYIC3Rv4fDa9itCRM0Hxvv966CrVWbVku7VeOBGs2l+x'
-                       + 'Q4S4zTgp9T7FEFAkO93qB/IxreA/hvRkStbW2bGwC5jhxkgh7MlCbiVkHMrSTwZe'
-                       + 'w1Wt3ZSU+zCpts0J2hl2f0fVlF/piQOs9R2FvoiPD1S+ZkrEORStX3Fn9IxlD0lI'
-                       + '3Azu4DQqJg1VtyZADXxCaikYm9Z5OV7ycDN3PeKpwODm7l12LblAQIAXyVV2tUhj'
-                       + 'uJ07wzjEHWX0rT3ayFTepfQUYg', small
-                       )],
+            [Paragraph(self._comprobante.timbre.sello_sat, small)],
             ['Cadena original del complemento de certificación digital del SAT:'],
-            [Paragraph('||1.1|1E399AAF-002A-4C84-A00E-74C0718FAF51|2018-08-01T19:08'
-                       + ':44Z|TLE011122SC2|JZC9GYMrfJVZU6syt6BjP7xhKdHksWkiL5fxWykpDaKp1aM'
-                       + '35PCSZbdOLr64VYPU+KGebWusMZVH8jeTez13wZBm2Bj/m2dlTdxC34BYOzCEIVqF'
-                       + 'QZ45JEAsW63lq/Y6Yf2pHxtKit0Nf+k/F5wxH51g0zd9cgr2bxq+8YuH0lNgJMOoV'
-                       + 'y1gLSJCPyW1ROsuMvncoVFLTy4SrOiUt+U2EBzLIyG50MGf7+w8YV+FJ+eKsk/kfI'
-                       + 'dHT/Nwn+oBG9++cpNBo8EDtAZDQk9yvZUILogLsR0QF+0P5oo4L7vnk077JrfNQ8v'
-                       + 'kdBgvQI17USKf0mTeJihIsXw2U6F0zQDwzQ==|00001000000404512308||',
-                       small
-                       )],
+            [Paragraph(self._comprobante.timbre.cadena_original, small)],
         ]
 
         estilo_tabla_doc = TableStyle([
@@ -179,8 +193,9 @@ class ImpresionPagos:
             ('LEADING', (0, 0), (-1, -1), 5.7),
         ])
         canvas.saveState()
+        ruta_logo = sep.join(self._ruta_logos) + sep + self._archivo_logo
         canvas.drawImage(
-            'recursos\\logos\\hino-logo1-300x261.jpg',
+            ruta_logo,
             7.0556 * mm,
             240.50 * mm,
             width=36.49 * mm,
@@ -261,8 +276,8 @@ class ImpresionPagos:
 
         # QR
         qr_code = qr.QrCodeWidget(
-            f'?re=ACA080131IL5&rr=RLI051025J88&tt=6005.390000'
-            + f'&id=09E1D1B8-44F5-47AD-B3FC-0762B179CF7D'
+            f'?re={emisor.rfc}&rr={self._comprobante.receptor.rfc}'
+            +f'&tt={self._comprobante.total}&id={self._comprobante.timbre.uuid}'
         )
         qr_code.barWidth = 30 * mm
         qr_code.barHeight = 30 * mm
@@ -311,197 +326,20 @@ class ImpresionPagos:
                 'Imp. Pagado',
                 'Saldo Insoluto',
             ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
-            [
-                '89BEF399-FAD5-4457-ACC1-05A1B28A7021',
-                'AA1119',
-                'MXN',
-                'PPD',
-                '1',
-                '783,232.00',
-                '150,000.00',
-                '633,232.00'
-            ],
         ]
+        for pago in self._comprobante.pagos:
+            fila = [
+                pago.docto_relacionado.id_documento,
+                (pago.docto_relacionado.serie
+                +pago.docto_relacionado.folio),
+                pago.docto_relacionado.moneda_dr,
+                pago.docto_relacionado.metodo_pago_dr,
+                pago.docto_relacionado.num_parcialidad,
+                pago.docto_relacionado.imp_saldo_ant,
+                pago.docto_relacionado.imp_pagado,
+                pago.docto_relacionado.imp_saldo_insoluto,
+            ]
+            lista_detalle.append(fila)
         # Detalle
         tabla_detalle = Table(
             lista_detalle,
