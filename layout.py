@@ -1,6 +1,5 @@
-from os import startfile
+from os import sep, startfile
 from re import match
-from os import sep
 
 from reportlab.graphics import renderPDF
 from reportlab.graphics.barcode import qr
@@ -55,7 +54,6 @@ class ImpresionPagos:
     def codigo_color_lineas(self, codigo_color_lineas):
         self._codigo_color_lineas = codigo_color_lineas
 
-
     def _lee_ini(self):
         with open('layout.ini') as config:
             bandera = ''
@@ -73,7 +71,7 @@ class ImpresionPagos:
                         if llave == 'ruta_logos':
                             self._ruta_logos = valor.split('|')
                     elif (bandera == 'emisor'
-                        and titulo == self._comprobante.emisor.rfc):
+                          and titulo == self._comprobante.emisor.rfc):
                         if llave == 'CN':
                             self._comprobante.emisor.calle_numero = valor
                         elif llave == 'C':
@@ -88,7 +86,6 @@ class ImpresionPagos:
                             self._archivo_logo = valor
                         elif llave == 'CL':
                             self._codigo_color_lineas = valor
-
 
     def _primera_hoja(self, canvas, document):
         canvas.setAuthor('Enrique Santana')
@@ -147,21 +144,24 @@ class ImpresionPagos:
         small.splitLongWords = True
         small.spaceShrinkage = 0.05
 
-        datos_emisor = (f'<b>{emisor.nombre}</b><br/>'
-            + f'<para leading=8><font size=8>{emisor.calle_numero}<br/>'
-            + f'COL. {emisor.colonia}<br/>'
-            + f'{emisor.ciudad}<br/>{emisor.estado_pais}<br/>'
-            + f'C.P. {emisor.codigo_postal}<br/> R.F.C. {emisor.rfc}<br/>'
-            + f'Regímen fiscal: {emisor.regimen_fiscal}</font>')
+        datos_emisor = (f'<b>{emisor.nombre}</b><br/><para leading=8>'
+                        + f'<font size=8>{emisor.calle_numero}<br/>'
+                        + f'COL. {emisor.colonia}<br/>'
+                        + f'{emisor.ciudad}<br/>{emisor.estado_pais}<br/>'
+                        + f'C.P. {emisor.codigo_postal}<br/>'
+                        + f'R.F.C. {emisor.rfc}<br/>'
+                        + f'Regímen fiscal: {emisor.regimen_fiscal}</font>')
 
         titulos_receptor = [[
             'Receptor del comprobante', 'Clave:',
             self._comprobante.receptor.clave,
         ]]
         datos_receptor = (f'<font size=8>{receptor.nombre}</font><br/><br/>'
-            + f'{receptor.calle}<br/>COL. {receptor.colonia}<br/>'
-            + f'{receptor.municipio}<br/>{receptor.estado}, {receptor.pais}<br/>'
-            + f'C.P. {receptor.codigo_postal}<br/>R.F.C. {receptor.rfc}<br/>')
+                          + f'{receptor.calle}<br/>COL. {receptor.colonia}<br/>'
+                          + f'{receptor.municipio}<br/>'
+                          + f'{receptor.estado}, {receptor.pais}<br/>'
+                          + f'C.P. {receptor.codigo_postal}<br/>'
+                          + f'R.F.C. {receptor.rfc}<br/>')
 
         titulo_comprobante = 'RECIBO'
         serie_folio = f'{self._comprobante.serie}-{self._comprobante.folio}'
@@ -315,7 +315,7 @@ class ImpresionPagos:
         # QR
         qr_code = qr.QrCodeWidget(
             f'?re={emisor.rfc}&rr={self._comprobante.receptor.rfc}'
-            +f'&tt={self._comprobante.total}&id={self._comprobante.timbre.uuid}'
+            + f'&tt={self._comprobante.total}&id={self._comprobante.timbre.uuid}'
         )
         qr_code.barWidth = 30 * mm
         qr_code.barHeight = 30 * mm
@@ -341,10 +341,9 @@ class ImpresionPagos:
 
         canvas.restoreState()
 
-
     def _define_layout(self):
         documento = SimpleDocTemplate(
-            self._comprobante.nombre_archivo[:-4]+'.pdf',
+            self._comprobante.nombre_archivo[:-4] + '.pdf',
             pagesize=letter,
             rightMargin=7.0556 * mm,
             leftMargin=7.0556 * mm,
@@ -369,7 +368,7 @@ class ImpresionPagos:
             fila = [
                 pago.docto_relacionado.id_documento,
                 (pago.docto_relacionado.serie
-                +pago.docto_relacionado.folio),
+                 + pago.docto_relacionado.folio),
                 pago.docto_relacionado.moneda_dr,
                 pago.docto_relacionado.metodo_pago_dr,
                 pago.docto_relacionado.num_parcialidad,
@@ -406,12 +405,6 @@ class ImpresionPagos:
         documento.build(flowables, onFirstPage=self._primera_hoja,
                         onLaterPages=self._primera_hoja)
 
-
-def main():
-    impre = ImpresionPagos(None)
-    impre._define_layout()
-    startfile('test.pdf')
-
-
-if __name__ == '__main__':
-    main()
+    def genera_pdf(self):
+        self._lee_ini()
+        self._define_layout()
