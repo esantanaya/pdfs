@@ -2,17 +2,26 @@ import os
 import re
 
 from lxml import etree as ET
+
+from layout import ImpresionPagos
 from pagos import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
                    Receptor, TimbreFiscalDigital)
 
-directorio = 'recursos'
-patron = r'\d{2}\-\w{7}\-\w{7}\.xml'
-archivos = os.listdir(directorio)
-archivos_validos = re.findall(patron, '|'.join(archivos))
+
+def ordena_archivos(agencia, mes_anio, directorio):
+    patron = r'\d{2}\-UA29\w{3}\-\w{7}\.xml' #Para recibos
+    ruta_archivos = os.sep.join(directorio) + os.sep + agencia + os.sep + mes_anio
+    try:
+        archivos = os.listdir(ruta_archivos)
+        archivos_validos = re.findall(patron, '|'.join(archivos))
+        return archivos_validos
+    except Exception as e:
+        print(e)
 
 
-def leer_archivos(archivo):
-    tree = ET.parse(archivo)
+def leer_archivo(archivo, mes_anio, ruta, agencia):
+    ruta = os.sep.join(ruta)
+    tree = ET.parse(ruta + os.sep + agencia + os.sep + mes_anio + os.sep + archivo)
     root = tree.getroot()
 
     ns_cfdi = '{http://www.sat.gob.mx/cfd/3}'
@@ -110,36 +119,48 @@ def leer_archivos(archivo):
             timbre,
         )
 
-    # TODO: Hacer esto programable
     ruta_f33 = [
+        '\\\\192.168.24.10',
+        'E$',
         'CFD',
         'Intercambio',
         'Procesado',
         f'{emisor.rfc}',
-        '082018',
+        mes_anio,
         f'{emisor.rfc}-{archivo[:-4]}.F33',
     ]
     archivo_f33 = os.sep.join(ruta_f33)
 
-    with open(archivo_f33, 'r') as f33:
-        lineas = {x.rstrip().split('|')[0]: x.rstrip().split('|')[
+    try:
+        with open(archivo_f33, 'r') as f33:
+            lineas = {x.rstrip().split('|')[0]: x.rstrip().split('|')[
             1:] for x in f33}
-
-    comprobante.total_letra = lineas['DOCUMENTO'][15]
-    comprobante.receptor.clave = lineas['CLIENTE'][0]
-    comprobante.receptor.calle = lineas['CLIENTE'][2]
-    comprobante.receptor.colonia = lineas['CLIENTE'][3]
-    comprobante.receptor.municipio = lineas['CLIENTE'][10]
-    comprobante.receptor.estado = lineas['CLIENTE'][11]
-    comprobante.receptor.pais = lineas['CLIENTE'][12]
-    comprobante.receptor.codigo_postal = lineas['CLIENTE'][7]
+            comprobante.total_letra = lineas['DOCUMENTO'][15]
+            comprobante.receptor.clave = lineas['CLIENTE'][0]
+            comprobante.receptor.calle = lineas['CLIENTE'][2]
+            comprobante.receptor.colonia = lineas['CLIENTE'][3]
+            comprobante.receptor.municipio = lineas['CLIENTE'][10]
+            comprobante.receptor.estado = lineas['CLIENTE'][11]
+            comprobante.receptor.pais = lineas['CLIENTE'][12]
+            comprobante.receptor.codigo_postal = lineas['CLIENTE'][7]
+    except Exception as e:
+        print(e)
+        with open('errores.log', '+a') as log:
+            log.write('\n'+str(e))
 
     return comprobante
 
 
 if __name__ == '__main__':
-    while True:
-        for archivo_valido in archivos_validos:
-            ruta = [directorio, archivo_valido]
-            archivo = os.sep.join(ruta)
-            print(leer_archivos(archivo))
+    agencia = 'ACA080131IL5'
+    mes_anio = '062018'
+    ruta = [
+        '\\\\192.168.24.10',
+        'E$',
+        'CFD',
+        'Almacen',
+    ]
+    for archivo_valido in ordena_archivos(agencia, mes_anio, ruta):
+        comp = leer_archivo(archivo_valido, mes_anio, ruta, agencia)
+        imp = ImpresionPagos(comp)
+        imp.genera_pdf()
