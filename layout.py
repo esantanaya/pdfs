@@ -1,6 +1,7 @@
 from os import sep, startfile
 from re import match
 
+from pagos import Comprobante
 from reportlab.graphics import renderPDF
 from reportlab.graphics.barcode import qr
 from reportlab.graphics.shapes import Drawing, Rect
@@ -11,8 +12,6 @@ from reportlab.lib.units import mm
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import (Frame, PageTemplate, Paragraph,
                                 SimpleDocTemplate, Spacer, Table, TableStyle)
-
-from pagos import Comprobante
 
 
 class ImpresionPagos:
@@ -163,7 +162,7 @@ class ImpresionPagos:
                           + f'C.P. {receptor.codigo_postal}<br/>'
                           + f'R.F.C. {receptor.rfc}<br/>')
 
-        titulo_comprobante = 'RECIBO'
+        titulo_comprobante = 'PAGO'
         serie_folio = f'{self._comprobante.serie}-{self._comprobante.folio}'
         fecha_emision = self._comprobante.fecha
         serie_cert_emisor = self._comprobante.no_certificado
@@ -190,8 +189,10 @@ class ImpresionPagos:
         ]
         info_extra = [
             [self._comprobante.total_letra, '', '', ''],
-            ['Forma de pago:', self._comprobante.pagos[0].forma_pago_p, '', ''],
-            ['', '', '', ''],
+            ['Forma de pago:', self._comprobante.pagos[0].forma_pago_p,
+                'Unidad de Medida:', self._comprobante.concepto.clave_unidad],
+            ['Uso de CFDI:', self._comprobante.receptor.uso_cfdi,
+                'Clave de Producto:', self._comprobante.concepto.clave_prod_serv],
             ['Condiciones:', '', '', ''],
         ]
         info_totales = [
