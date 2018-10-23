@@ -1,17 +1,16 @@
-from os import sep, startfile
+from os import sep
 from re import match
 
 from pagos import Comprobante
 from reportlab.graphics import renderPDF
 from reportlab.graphics.barcode import qr
-from reportlab.graphics.shapes import Drawing, Rect
-from reportlab.lib.colors import Color, black, red
+from reportlab.graphics.shapes import Drawing
+from reportlab.lib.colors import red
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
-from reportlab.pdfgen.canvas import Canvas
-from reportlab.platypus import (Frame, PageTemplate, Paragraph,
-                                SimpleDocTemplate, Spacer, Table, TableStyle)
+from reportlab.platypus import (Frame, Paragraph, SimpleDocTemplate, Spacer,
+                                Table, TableStyle)
 
 
 class ImpresionPagos:
