@@ -3,4 +3,6 @@ CFD/
 firefox/
 *.png
 *.pdf
+*.F33
 *.xml
+*.log

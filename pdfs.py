@@ -9,6 +9,7 @@ from pagos import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
 
 
 def ordena_archivos(agencia, mes_anio, directorio):
+    print(f'Ordenando archivos...')
     patron = r'\d{2}\-UA29\w{3}\-\w{7}\.xml' #Para recibos
     ruta_archivos = os.sep.join(directorio) + os.sep + agencia + os.sep + mes_anio
     try:
@@ -20,6 +21,7 @@ def ordena_archivos(agencia, mes_anio, directorio):
 
 
 def leer_archivo(archivo, mes_anio, ruta, agencia):
+    print(f'leyendo archivo {archivo}')
     ruta = os.sep.join(ruta)
     tree = ET.parse(ruta + os.sep + agencia + os.sep + mes_anio + os.sep + archivo)
     root = tree.getroot()
@@ -99,6 +101,7 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
         pagos.append(pago)
 
     if root.tag == f'{ns_cfdi}Comprobante':
+        print(f'Creando comprobante')
         comprobante = Comprobante(
             archivo,
             root.attrib['NoCertificado'],
@@ -130,12 +133,13 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
         f'{emisor.rfc}-{archivo[:-4]}.F33',
     ]
     archivo_f33 = os.sep.join(ruta_f33)
-
+    print(f'leyendo archivo {archivo_f33}')
     try:
         with open(archivo_f33, 'r') as f33:
             lineas = {x.rstrip().split('|')[0]: x.rstrip().split('|')[
             1:] for x in f33}
             comprobante.total_letra = lineas['DOCUMENTO'][15]
+            comprobante.cuenta_pago = lineas['DOCUMENTO'][13]
             comprobante.receptor.clave = lineas['CLIENTE'][0]
             comprobante.receptor.calle = lineas['CLIENTE'][2]
             comprobante.receptor.colonia = lineas['CLIENTE'][3]
@@ -143,6 +147,27 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
             comprobante.receptor.estado = lineas['CLIENTE'][11]
             comprobante.receptor.pais = lineas['CLIENTE'][12]
             comprobante.receptor.codigo_postal = lineas['CLIENTE'][7]
+    except FileNotFoundError as ffe:
+        print(f'{ffe} | Buscando en Errores!')
+        archivo_error = archivo_f33.replace('Procesado', 'Errores')
+        try:
+            with open(archivo_error, 'r') as f33:
+                print(f'Encontramos el F33 en errores!')
+                lineas = {x.rstrip().split('|')[0]: x.rstrip().split('|')[
+                1:] for x in f33}
+                comprobante.total_letra = lineas['DOCUMENTO'][15]
+                comprobante.cuenta_pago = lineas['DOCUMENTO'][13]
+                comprobante.receptor.clave = lineas['CLIENTE'][0]
+                comprobante.receptor.calle = lineas['CLIENTE'][2]
+                comprobante.receptor.colonia = lineas['CLIENTE'][3]
+                comprobante.receptor.municipio = lineas['CLIENTE'][10]
+                comprobante.receptor.estado = lineas['CLIENTE'][11]
+                comprobante.receptor.pais = lineas['CLIENTE'][12]
+                comprobante.receptor.codigo_postal = lineas['CLIENTE'][7]
+        except Exception as e:
+            print(f'{e} | tampoco lo encontramos en errores!')
+            with open('errores.log', '+a') as log:
+                log.write('\n'+str(e))
     except Exception as e:
         print(e)
         with open('errores.log', '+a') as log:
@@ -150,10 +175,9 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
 
     return comprobante
 
-
-if __name__ == '__main__':
-    agencia = 'ACA080131IL5'
-    mes_anio = '062018'
+def main_pagos():
+    agencia = 'RCA100823GI9'
+    mes_anio = '102018'
     ruta = [
         '\\\\192.168.24.10',
         'E$',
@@ -161,6 +185,15 @@ if __name__ == '__main__':
         'Almacen',
     ]
     for archivo_valido in ordena_archivos(agencia, mes_anio, ruta):
-        comp = leer_archivo(archivo_valido, mes_anio, ruta, agencia)
-        imp = ImpresionPagos(comp)
-        imp.genera_pdf()
+        try:
+            comp = leer_archivo(archivo_valido, mes_anio, ruta, agencia)
+            imp = ImpresionPagos(comp)
+            imp.genera_pdf()
+        except Exception as e:
+            print(e)
+            with open('errores.log', '+a') as log:
+                log.write('\n'+str(e))
+            continue
+
+if __name__ == '__main__':
+    main_pagos()

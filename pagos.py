@@ -19,6 +19,7 @@ class Comprobante:
         pagos=None,
         timbre=None,
         total_letra=None,
+        cuenta_pago=None,
     ):
         self._nombre_archivo = nombre_archivo
         self._no_certificado = no_certificado
@@ -38,6 +39,7 @@ class Comprobante:
         self._pagos = pagos
         self._timbre = timbre
         self._total_letra = total_letra
+        self._cuenta_pago = cuenta_pago
 
     @property
     def nombre_archivo(self):
@@ -182,6 +184,14 @@ class Comprobante:
     @total_letra.setter
     def total_letra(self, total_letra):
         self._total_letra = total_letra
+
+    @property
+    def cuenta_pago(self):
+        return self._cuenta_pago
+
+    @cuenta_pago.setter
+    def cuenta_pago(self, cuenta_pago):
+        self._cuenta_pago = cuenta_pago
 
 
 class Emisor:

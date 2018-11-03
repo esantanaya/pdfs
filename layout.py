@@ -1,7 +1,6 @@
 from os import sep
 from re import match
 
-from pagos import Comprobante
 from reportlab.graphics import renderPDF
 from reportlab.graphics.barcode import qr
 from reportlab.graphics.shapes import Drawing
@@ -192,7 +191,7 @@ class ImpresionPagos:
                 'Unidad de Medida:', self._comprobante.concepto.clave_unidad],
             ['Uso de CFDI:', self._comprobante.receptor.uso_cfdi,
                 'Clave de Producto:', self._comprobante.concepto.clave_prod_serv],
-            ['Condiciones:', '', '', ''],
+            ['Número de cuenta:', self._comprobante.cuenta_pago, '', ''],
         ]
         info_totales = [
             ['Total:', f'${self._comprobante.pagos[0].monto}'],
@@ -311,6 +310,11 @@ class ImpresionPagos:
         tabla_info.setStyle(estilo_tabla_info_qr)
         flowables_pie_info.append(tabla_info)
         frame_pie_info.addFromList(flowables_pie_info, canvas)
+        canvas.drawString(
+            47.36*mm,
+            7.83*mm,
+            'Este documento es una representación impresa de un CFDI.'
+        )
 
         # QR
         qr_code = qr.QrCodeWidget(
