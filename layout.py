@@ -19,6 +19,8 @@ class ImpresionPagos:
         self._archivo_logo = ''
         self._codigo_color_lineas = ''
 
+        self.resuelve_codigos()
+
     @property
     def comprobante(self):
         return self._comprobante
@@ -52,7 +54,7 @@ class ImpresionPagos:
         self._codigo_color_lineas = codigo_color_lineas
 
     def _lee_ini(self):
-        with open('layout.ini') as config:
+        with open('layout.ini', encoding='utf-8') as config:
             bandera = ''
             for linea in config:
                 linea = linea.strip()
@@ -319,8 +321,8 @@ class ImpresionPagos:
         flowables_pie_info.append(tabla_info)
         frame_pie_info.addFromList(flowables_pie_info, canvas)
         canvas.drawString(
-            47.36*mm,
-            7.83*mm,
+            47.36 * mm,
+            7.83 * mm,
             'Este documento es una representación impresa de un CFDI.'
         )
 
@@ -416,6 +418,26 @@ class ImpresionPagos:
 
         documento.build(flowables, onFirstPage=self._primera_hoja,
                         onLaterPages=self._primera_hoja)
+
+    def resuelve_codigos(self):
+        try:
+            with open('catalogos.db', encoding='utf-8') as catalogo:
+                for linea in catalogo:
+                    linea = linea.strip()
+                    if linea.startswith('[') and linea.endswith(']'):
+                        titulo = linea[1:-1]
+                    elif '=' in linea:
+                        clave, descripcion = linea.split('=')
+                        if (titulo == 'FormasPago' and
+                                self._comprobante.pagos[0].forma_pago_p == clave
+                                ):
+                            self._comprobante.pagos[0].forma_pago_p += f' {descripcion}'
+                        if (titulo == 'UsosCFDI' and
+                                self._comprobante.receptor.uso_cfdi == clave
+                                ):
+                            self._comprobante.receptor.uso_cfdi += f' {descripcion}'
+        except FileNotFoundError as fnfe:
+            print(fnfe)
 
     def genera_pdf(self):
         self._lee_ini()
