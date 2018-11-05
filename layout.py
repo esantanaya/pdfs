@@ -187,10 +187,18 @@ class ImpresionPagos:
         ]
         info_extra = [
             [self._comprobante.total_letra, '', '', ''],
-            ['Forma de pago:', self._comprobante.pagos[0].forma_pago_p,
-                'Unidad de Medida:', self._comprobante.concepto.clave_unidad],
-            ['Uso de CFDI:', self._comprobante.receptor.uso_cfdi,
-                'Clave de Producto:', self._comprobante.concepto.clave_prod_serv],
+            [
+                'Forma de pago:',
+                self._comprobante.pagos[0].forma_pago_p,
+                'Unidad de Medida:',
+                self._comprobante.conceptos[0].clave_unidad
+            ],
+            [
+                'Uso de CFDI:',
+                self._comprobante.receptor.uso_cfdi,
+                'Clave de Producto:',
+                self._comprobante.conceptos[0].clave_prod_serv
+            ],
             ['Número de cuenta:', self._comprobante.cuenta_pago, '', ''],
         ]
         info_totales = [

@@ -30,6 +30,7 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
     ns_pago10 = '{http://www.sat.gob.mx/Pagos}'
     ns_tfd = '{http://www.sat.gob.mx/TimbreFiscalDigital}'
 
+    conceptos = []
     for child in root:
         if child.tag == f'{ns_cfdi}Emisor':
             emisor = Emisor(
@@ -53,6 +54,7 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
                     grandchild.attrib['Importe'],
                     grandchild.attrib['ValorUnitario'],
                 )
+                conceptos.append(concepto)
         elif child.tag == f'{ns_cfdi}Complemento':
             for grandchild in child:
                 if grandchild.tag == f'{ns_pago10}Pagos':
@@ -117,7 +119,7 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
             root.attrib['Version'],
             emisor,
             receptor,
-            concepto,
+            conceptos,
             pagos,
             timbre,
         )

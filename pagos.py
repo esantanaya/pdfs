@@ -15,7 +15,7 @@ class Comprobante:
         version,
         emisor,
         receptor,
-        concepto=None,
+        conceptos=None,
         pagos=None,
         timbre=None,
         total_letra=None,
@@ -35,7 +35,7 @@ class Comprobante:
         self._version = version
         self._emisor = emisor
         self._receptor = receptor
-        self._concepto = concepto
+        self._conceptos = conceptos
         self._pagos = pagos
         self._timbre = timbre
         self._total_letra = total_letra
@@ -154,12 +154,12 @@ class Comprobante:
         self._receptor = receptor
 
     @property
-    def concepto(self):
-        return self._concepto
+    def conceptos(self):
+        return self._conceptos
 
-    @concepto.setter
-    def concepto(self, concepto):
-        self._concepto = concepto
+    @conceptos.setter
+    def conceptos(self, conceptos):
+        self._conceptos = conceptos
 
     @property
     def pagos(self):
