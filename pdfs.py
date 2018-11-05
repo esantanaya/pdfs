@@ -4,7 +4,7 @@ import re
 from lxml import etree as ET
 
 from layout import ImpresionPagos
-from pagos import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
+from comprobante import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
                    Receptor, TimbreFiscalDigital)
 
 
