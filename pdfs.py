@@ -3,7 +3,7 @@ import re
 
 from lxml import etree as ET
 
-from layout import ImpresionPagos
+from layout import ImpresionComprobante
 from comprobante import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
                    Receptor, TimbreFiscalDigital)
 
@@ -179,7 +179,7 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
 
 def main_pagos():
     agencia = 'RCA100823GI9'
-    mes_anio = '102018'
+    mes_anio = '112018'
     ruta = [
         '\\\\192.168.24.10',
         'E$',
@@ -189,7 +189,7 @@ def main_pagos():
     for archivo_valido in ordena_archivos(agencia, mes_anio, ruta):
         try:
             comp = leer_archivo(archivo_valido, mes_anio, ruta, agencia)
-            imp = ImpresionPagos(comp)
+            imp = ImpresionComprobante(comp)
             imp.genera_pdf()
         except Exception as e:
             print(e)

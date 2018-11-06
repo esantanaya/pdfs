@@ -12,7 +12,7 @@ from reportlab.platypus import (Frame, Paragraph, SimpleDocTemplate, Spacer,
                                 Table, TableStyle)
 
 
-class ImpresionPagos:
+class ImpresionComprobante:
     def __init__(self, comprobante):
         self._comprobante = comprobante
         self._ruta_logos = ''
@@ -162,7 +162,6 @@ class ImpresionPagos:
                           + f'C.P. {receptor.codigo_postal}<br/>'
                           + f'R.F.C. {receptor.rfc}<br/>')
 
-        titulo_comprobante = 'PAGO'
         serie_folio = f'{self._comprobante.serie}-{self._comprobante.folio}'
         fecha_emision = self._comprobante.fecha
         serie_cert_emisor = self._comprobante.no_certificado
@@ -171,6 +170,7 @@ class ImpresionPagos:
         fecha_hora_cert = self._comprobante.timbre.fecha_timbrado
         lugar_expedicion = self._comprobante.lugar_expedicion
 
+        titulo_comprobante = self.genera_titulos()
         titulos_documento = [
             [titulo_comprobante],
             [serie_folio],
@@ -439,6 +439,25 @@ class ImpresionPagos:
                             self._comprobante.receptor.uso_cfdi += f' {descripcion}'
         except FileNotFoundError as fnfe:
             print(fnfe)
+
+    def genera_titulos(self):
+        sucursal = self._comprobante.nombre_archivo[0:2]
+        genero = self._comprobante.nombre_archivo[3]
+        naturaleza = self._comprobante.nombre_archivo[4]
+        grupo = self._comprobante.nombre_archivo[5:7]
+        tipo = self._comprobante.nombre_archivo[7:10]
+
+        if self._comprobante.tipo_comprobante == 'P':
+            return 'PAGO'
+        if self._comprobante.tipo_comprobante == 'E':
+            return 'NOTA DE CRÉDITO'
+        if self._comprobante.tipo_comprobante == 'I':
+            if genero == 'U' and naturaleza == 'D' and grupo == '03':
+                return 'NOTA DE CARGO'
+
+            return 'FACTURA'
+
+        return 'SIN DEFINIR'
 
     def genera_pdf(self):
         self._lee_ini()
