@@ -320,8 +320,9 @@ class ImpresionPagos:
         tabla_info.setStyle(estilo_tabla_info_qr)
         flowables_pie_info.append(tabla_info)
         frame_pie_info.addFromList(flowables_pie_info, canvas)
+        canvas.setFont('Helvetica-Bold', 14)
         canvas.drawString(
-            47.36 * mm,
+            36.955 * mm,
             7.83 * mm,
             'Este documento es una representación impresa de un CFDI.'
         )
