@@ -18,6 +18,7 @@ class ImpresionComprobante:
         self._ruta_logos = ''
         self._archivo_logo = ''
         self._codigo_color_lineas = ''
+        self.pdf_titulo = 'Comprobante Físcal'
 
         self.resuelve_codigos()
 
@@ -116,8 +117,8 @@ class ImpresionComprobante:
     def _primera_hoja(self, canvas, document):
         canvas.setAuthor('Enrique Santana')
         canvas.setTitle('Representación impresa CFDI')
-        canvas.setSubject('Complemento de Pago')
-        canvas.setCreator('ReportLab')
+        canvas.setSubject(self.pdf_titulo)
+        canvas.setCreator('ProLeCSA')
         emisor = self._comprobante.emisor
         receptor = self._comprobante.receptor
         rojo, verde, azul = self._codigo_color_lineas[1:-1].split(',')
@@ -477,6 +478,7 @@ class ImpresionComprobante:
 class ImpresionPago(ImpresionComprobante):
     def __init__(self, comprobante):
         super().__init__(comprobante)
+        self.pdf_titulo = 'Complemento de Pago'
 
         self.info_extra = [
             [self._comprobante.total_letra, '', '', ''],

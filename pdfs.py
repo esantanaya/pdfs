@@ -185,7 +185,7 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
 
 def main_pagos():
     agencia = 'APA040128N75'
-    mes_anio = '092018'
+    mes_anio = '102018'
     ruta = [
         '\\\\192.168.24.10',
         'E$',
@@ -197,6 +197,11 @@ def main_pagos():
             comp = leer_archivo(archivo_valido, mes_anio, ruta, agencia)
             imp = ImpresionComprobante(comp)
             imp.genera_pdf()
+        except KeyError as ke:
+            traceback.print_exc()
+            with open('errores.log', '+a', encoding='UTF-8') as log:
+                log.write(f'\n [Error] en {agencia}-{archivo_valido} no se encontró {str(ke)}')
+            continue
         except Exception as e:
             print(e)
             traceback.print_exc()
