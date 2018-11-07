@@ -21,6 +21,33 @@ class ImpresionComprobante:
 
         self.resuelve_codigos()
 
+        self.info_extra = [
+            [self._comprobante.total_letra, '', '', ''],
+            [
+                'Forma de pago:',
+                self._comprobante.forma_pago,
+                'Número de Cuenta:',
+                self._comprobante.cuenta_pago,
+            ],
+            [
+                'Uso de CFDI:',
+                self._comprobante.receptor.uso_cfdi,
+            ],
+            [
+                'Método de pago:',
+                self._comprobante.metodo_pago,
+
+            ],
+        ]
+        subtotal = float(self._comprobante.subtotal)
+        total = float(self._comprobante.total)
+        impuestos = total - subtotal
+        self.info_totales = [
+            ['Subtotal :', f'${subtotal:,.2f}'],
+            ['I.V.A. 0.16% :', f'${impuestos:,.2f}'],
+            ['Total :', f'${total:,.2f}'],
+        ]
+
     @property
     def comprobante(self):
         return self._comprobante
@@ -187,25 +214,6 @@ class ImpresionComprobante:
             ['Lugar expedición'],
             [lugar_expedicion],
         ]
-        info_extra = [
-            [self._comprobante.total_letra, '', '', ''],
-            [
-                'Forma de pago:',
-                self._comprobante.pagos[0].forma_pago_p,
-                'Unidad de Medida:',
-                self._comprobante.conceptos[0].clave_unidad
-            ],
-            [
-                'Uso de CFDI:',
-                self._comprobante.receptor.uso_cfdi,
-                'Clave de Producto:',
-                self._comprobante.conceptos[0].clave_prod_serv
-            ],
-            ['Número de cuenta:', self._comprobante.cuenta_pago, '', ''],
-        ]
-        info_totales = [
-            ['Total:', f'${self._comprobante.pagos[0].monto}'],
-        ]
         info_info = [
             ['Sello digital del CFDI:'],
             [Paragraph(self._comprobante.timbre.sello_cfd, small)],
@@ -232,7 +240,8 @@ class ImpresionComprobante:
             ('SPAN', (0, 0), (3, 0)),
         ])
         estilo_tabla_totales = TableStyle([
-            ('ALIGN', (0, 0), (0, 0), 'RIGHT'),
+            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+            ('LEADING', (0, 0), (-1, -1), 5.7),
         ])
         estilo_tabla_info_qr = TableStyle([
             ('SIZE', (0, 0), (-1, -1), 8),
@@ -289,7 +298,7 @@ class ImpresionComprobante:
 
         # Pie
         tabla_pie = Table(
-            info_extra,
+            self.info_extra,
             colWidths=[
                 25.41 * mm,
                 65.99 * mm,
@@ -304,7 +313,7 @@ class ImpresionComprobante:
         frame_pie_datos.addFromList(flowables_pie_datos, canvas)
 
         tabla_totales = Table(
-            info_totales,
+            self.info_totales,
             colWidths=[32.59 * mm, 23.85 * mm]
         )
         tabla_totales.setStyle(estilo_tabla_totales)
@@ -369,6 +378,162 @@ class ImpresionComprobante:
         flowables = []
         lista_detalle = [
             [
+                'Cantidad',
+                'Unidad',
+                'Clave',
+                'Descripción',
+                'Precio',
+                'Importe',
+            ],
+        ]
+        for concepto in self._comprobante.conceptos:
+            fila = [
+                concepto.cantidad,
+                concepto.clave_unidad,
+                concepto.clave_prod_serv,
+                concepto.descripcion,
+                concepto.valor_unitario,
+                concepto.importe,
+            ]
+            lista_detalle.append(fila)
+        # Detalle
+        tabla_detalle = Table(
+            lista_detalle,
+            colWidths=[
+                26.65 * mm,
+                24.33 * mm,
+                23.98 * mm,
+                71.93 * mm,
+                29.91 * mm,
+                24.40 * mm,
+            ],
+            repeatRows=1,
+        )
+        estilo_tabla_detalle = TableStyle([
+            ('SIZE', (0, 0), (-1, -1), 9),
+            ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold')
+        ])
+        tabla_detalle.setStyle(estilo_tabla_detalle)
+        t = tabla_detalle.split(201.79 * mm, 119.94 * mm)
+        for x in t:
+            flowables.append(x)
+
+        documento.build(flowables, onFirstPage=self._primera_hoja,
+                        onLaterPages=self._primera_hoja)
+
+    def resuelve_codigos(self):
+        try:
+            with open('catalogos.db', encoding='utf-8') as catalogo:
+                for linea in catalogo:
+                    linea = linea.strip()
+                    if linea.startswith('[') and linea.endswith(']'):
+                        titulo = linea[1:-1]
+                    elif '=' in linea:
+                        clave, descripcion = linea.split('=')
+                        if (
+                            titulo == 'FormasPago' and
+                            self._comprobante.forma_pago == clave
+                        ):
+                            self._comprobante.forma_pago += f' {descripcion}'
+                        if (
+                            titulo == 'UsosCFDI' and
+                            self._comprobante.receptor.uso_cfdi == clave
+                        ):
+                            self._comprobante.receptor.uso_cfdi += f' {descripcion}'
+                        if (
+                            titulo == 'MetodosPago'
+                            and self._comprobante.metodo_pago == clave
+                        ):
+                            self._comprobante.metodo_pago += f' {descripcion}'
+
+        except FileNotFoundError as fnfe:
+            print(fnfe)
+
+    def genera_titulos(self):
+        sucursal = self._comprobante.nombre_archivo[0:2]
+        genero = self._comprobante.nombre_archivo[3]
+        naturaleza = self._comprobante.nombre_archivo[4]
+        grupo = self._comprobante.nombre_archivo[5:7]
+        tipo = self._comprobante.nombre_archivo[7:10]
+
+        if self._comprobante.tipo_comprobante == 'P':
+            return 'PAGO'
+        if self._comprobante.tipo_comprobante == 'E':
+            return 'NOTA DE CRÉDITO'
+        if self._comprobante.tipo_comprobante == 'I':
+            if genero == 'U' and naturaleza == 'D' and grupo == '03':
+                return 'NOTA DE CARGO'
+
+            return 'FACTURA'
+
+        return 'SIN DEFINIR'
+
+    def genera_pdf(self):
+        self._lee_ini()
+        self._define_layout()
+
+
+class ImpresionPago(ImpresionComprobante):
+    def __init__(self, comprobante):
+        super().__init__(comprobante)
+
+        self.info_extra = [
+            [self._comprobante.total_letra, '', '', ''],
+            [
+                'Forma de pago:',
+                self._comprobante.pagos[0].forma_pago_p,
+                'Unidad de medida:',
+                self._comprobante.conceptos[0].clave_unidad
+            ],
+            [
+                'Uso de CFDI:',
+                self._comprobante.receptor.uso_cfdi,
+                'Clave de Producto:',
+                self._comprobante.conceptos[0].clave_prod_serv
+            ],
+            ['Número de cuenta:', self._comprobante.cuenta_pago, '', ''],
+        ]
+        monto = float(self._comprobante.pagos[0].monto)
+        self.info_totales = [
+            ['Total:', f'${monto:,.2f}'],
+        ]
+
+    def resuelve_codigos(self):
+        try:
+            with open('catalogos.db', encoding='utf-8') as catalogo:
+                for linea in catalogo:
+                    linea = linea.strip()
+                    if linea.startswith('[') and linea.endswith(']'):
+                        titulo = linea[1:-1]
+                    elif '=' in linea:
+                        clave, descripcion = linea.split('=')
+                        if (
+                            titulo == 'FormasPago' and
+                            self._comprobante.pagos[0].forma_pago_p == clave
+                        ):
+                            self._comprobante.pagos[0].forma_pago_p += f' {descripcion}'
+                        if (
+                            titulo == 'UsosCFDI' and
+                            self._comprobante.receptor.uso_cfdi == clave
+                        ):
+                            self._comprobante.receptor.uso_cfdi += f' {descripcion}'
+        except FileNotFoundError as fnfe:
+            print(fnfe)
+
+    def _define_layout(self):
+        documento = SimpleDocTemplate(
+            self._comprobante.nombre_archivo[:-4] + '.pdf',
+            pagesize=letter,
+            rightMargin=7.0556 * mm,
+            leftMargin=7.0556 * mm,
+            topMargin=72.55 * mm,
+            bottomMargin=86.79 * mm,
+        )
+        styles = getSampleStyleSheet()
+        flowables = []
+        lista_detalle = [
+            [
                 'Pago correspondiente a: Folio Fiscal',
                 'Folio y Serie',
                 'Moneda',
@@ -419,46 +584,3 @@ class ImpresionComprobante:
 
         documento.build(flowables, onFirstPage=self._primera_hoja,
                         onLaterPages=self._primera_hoja)
-
-    def resuelve_codigos(self):
-        try:
-            with open('catalogos.db', encoding='utf-8') as catalogo:
-                for linea in catalogo:
-                    linea = linea.strip()
-                    if linea.startswith('[') and linea.endswith(']'):
-                        titulo = linea[1:-1]
-                    elif '=' in linea:
-                        clave, descripcion = linea.split('=')
-                        if (titulo == 'FormasPago' and
-                                self._comprobante.pagos[0].forma_pago_p == clave
-                                ):
-                            self._comprobante.pagos[0].forma_pago_p += f' {descripcion}'
-                        if (titulo == 'UsosCFDI' and
-                                self._comprobante.receptor.uso_cfdi == clave
-                                ):
-                            self._comprobante.receptor.uso_cfdi += f' {descripcion}'
-        except FileNotFoundError as fnfe:
-            print(fnfe)
-
-    def genera_titulos(self):
-        sucursal = self._comprobante.nombre_archivo[0:2]
-        genero = self._comprobante.nombre_archivo[3]
-        naturaleza = self._comprobante.nombre_archivo[4]
-        grupo = self._comprobante.nombre_archivo[5:7]
-        tipo = self._comprobante.nombre_archivo[7:10]
-
-        if self._comprobante.tipo_comprobante == 'P':
-            return 'PAGO'
-        if self._comprobante.tipo_comprobante == 'E':
-            return 'NOTA DE CRÉDITO'
-        if self._comprobante.tipo_comprobante == 'I':
-            if genero == 'U' and naturaleza == 'D' and grupo == '03':
-                return 'NOTA DE CARGO'
-
-            return 'FACTURA'
-
-        return 'SIN DEFINIR'
-
-    def genera_pdf(self):
-        self._lee_ini()
-        self._define_layout()

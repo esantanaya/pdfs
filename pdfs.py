@@ -1,16 +1,17 @@
 import os
 import re
+import traceback
 
 from lxml import etree as ET
 
-from layout import ImpresionComprobante
+from layout import ImpresionComprobante, ImpresionPago
 from comprobante import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
                    Receptor, TimbreFiscalDigital)
 
 
 def ordena_archivos(agencia, mes_anio, directorio):
     print(f'Ordenando archivos...')
-    patron = r'\d{2}\-UA29\w{3}\-\w{7}\.xml' #Para recibos
+    patron = r'\d{2}\-UA03\w{3}\-\w{7}\.xml' #Para recibos
     ruta_archivos = os.sep.join(directorio) + os.sep + agencia + os.sep + mes_anio
     try:
         archivos = os.listdir(ruta_archivos)
@@ -29,7 +30,7 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
     ns_cfdi = '{http://www.sat.gob.mx/cfd/3}'
     ns_pago10 = '{http://www.sat.gob.mx/Pagos}'
     ns_tfd = '{http://www.sat.gob.mx/TimbreFiscalDigital}'
-
+    element_pagos = None
     conceptos = []
     for child in root:
         if child.tag == f'{ns_cfdi}Emisor':
@@ -78,29 +79,30 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
                     )
 
     pagos = []
-    for element_pago in element_pagos:
-        total_pagos = 0
-        element_docto = element_pago.find(
-            f'{ns_pago10}DoctoRelacionado')
-        docto = DoctoRelacionado(
-            element_docto.attrib['Folio'],
-            element_docto.attrib['IdDocumento'],
-            element_docto.attrib['ImpPagado'],
-            element_docto.attrib['ImpSaldoAnt'],
-            element_docto.attrib['ImpSaldoInsoluto'],
-            element_docto.attrib['MetodoDePagoDR'],
-            element_docto.attrib['MonedaDR'],
-            element_docto.attrib['NumParcialidad'],
-            element_docto.attrib['Serie'],
-        )
-        pago = Pago(
-            element_pago.attrib['FechaPago'],
-            element_pago.attrib['FormaDePagoP'],
-            element_pago.attrib['MonedaP'],
-            element_pago.attrib['Monto'],
-            docto,
-        )
-        pagos.append(pago)
+    if element_pagos != None:
+        for element_pago in element_pagos:
+            total_pagos = 0
+            element_docto = element_pago.find(
+                f'{ns_pago10}DoctoRelacionado')
+            docto = DoctoRelacionado(
+                element_docto.attrib['Folio'],
+                element_docto.attrib['IdDocumento'],
+                element_docto.attrib['ImpPagado'],
+                element_docto.attrib['ImpSaldoAnt'],
+                element_docto.attrib['ImpSaldoInsoluto'],
+                element_docto.attrib['MetodoDePagoDR'],
+                element_docto.attrib['MonedaDR'],
+                element_docto.attrib['NumParcialidad'],
+                element_docto.attrib['Serie'],
+            )
+            pago = Pago(
+                element_pago.attrib['FechaPago'],
+                element_pago.attrib['FormaDePagoP'],
+                element_pago.attrib['MonedaP'],
+                element_pago.attrib['Monto'],
+                docto,
+            )
+            pagos.append(pago)
 
     if root.tag == f'{ns_cfdi}Comprobante':
         print(f'Creando comprobante')
@@ -119,10 +121,14 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
             root.attrib['Version'],
             emisor,
             receptor,
-            conceptos,
-            pagos,
-            timbre,
+            conceptos=conceptos,
+            pagos=pagos,
+            timbre=timbre,
         )
+
+        if comprobante.tipo_comprobante != 'P':
+            comprobante.forma_pago = root.attrib['FormaPago']
+            comprobante.metodo_pago = root.attrib['MetodoPago']
 
     ruta_f33 = [
         '\\\\192.168.24.10',
@@ -178,8 +184,8 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
     return comprobante
 
 def main_pagos():
-    agencia = 'RCA100823GI9'
-    mes_anio = '112018'
+    agencia = 'APA040128N75'
+    mes_anio = '092018'
     ruta = [
         '\\\\192.168.24.10',
         'E$',
@@ -193,6 +199,7 @@ def main_pagos():
             imp.genera_pdf()
         except Exception as e:
             print(e)
+            traceback.print_exc()
             with open('errores.log', '+a') as log:
                 log.write('\n'+str(e))
             continue

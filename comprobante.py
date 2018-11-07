@@ -15,6 +15,8 @@ class Comprobante:
         version,
         emisor,
         receptor,
+        forma_pago=None,
+        metodo_pago=None,
         conceptos=None,
         pagos=None,
         timbre=None,
@@ -35,6 +37,8 @@ class Comprobante:
         self._version = version
         self._emisor = emisor
         self._receptor = receptor
+        self._forma_pago = forma_pago
+        self._metodo_pago = metodo_pago
         self._conceptos = conceptos
         self._pagos = pagos
         self._timbre = timbre
@@ -152,6 +156,22 @@ class Comprobante:
     @receptor.setter
     def receptor(self, receptor):
         self._receptor = receptor
+
+    @property
+    def forma_pago(self):
+        return self._forma_pago
+
+    @forma_pago.setter
+    def forma_pago(self, forma_pago):
+        self._forma_pago = forma_pago
+
+    @property
+    def metodo_pago(self):
+        return self._metodo_pago
+
+    @metodo_pago.setter
+    def metodo_pago(self, metodo_pago):
+        self._metodo_pago = metodo_pago
 
     @property
     def conceptos(self):

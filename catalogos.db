@@ -46,3 +46,7 @@ D08=Gastos de transportación escolar obligatoria.
 D09=Depósitos en cuentas para el ahorro, primas que tengan como base planes de pensiones.
 D10=Pagos por servicios educativos (colegiaturas)
 P01=Por definir
+
+[MetodosPago]
+PUE=Pago en una sola exhibición
+PPD=Pago en parcialidades o diferido
