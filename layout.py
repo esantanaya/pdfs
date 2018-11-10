@@ -4,12 +4,17 @@ from re import match
 from reportlab.graphics import renderPDF
 from reportlab.graphics.barcode import qr
 from reportlab.graphics.shapes import Drawing
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.colors import red
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import (Frame, Paragraph, SimpleDocTemplate, Spacer,
                                 Table, TableStyle)
+
+pdfmetrics.registerFont(TTFont('Bauhaus',
+                        sep.join(['recursos', 'fonts','BAUHS93.TTF'])))
 
 
 class ImpresionComprobante:
@@ -171,8 +176,14 @@ class ImpresionComprobante:
         small.splitLongWords = True
         small.spaceShrinkage = 0.05
 
-        datos_emisor = (f'<b>{emisor.nombre}</b><br/><para leading=8>'
-                        + f'<font size=8>{emisor.calle_numero}<br/>'
+        # TODO: Quitar este feo if, lo ideal sería que obtuviera la fuenta y el color de layout.ini 
+        if self._comprobante.emisor.rfc == 'AIQ070917FVA':
+            datos_emisor = (f'<font name=Bauhaus color=#548235 size=14>'
+                            + f'{emisor.nombre}</font><br/><para leading=8>')
+        else:
+            datos_emisor = f'<b>{emisor.nombre}</b><br/><para leading=8>'
+
+        datos_emisor += (f'<font size=8>{emisor.calle_numero}<br/>'
                         + f'COL. {emisor.colonia}<br/>'
                         + f'{emisor.ciudad}<br/>{emisor.estado_pais}<br/>'
                         + f'C.P. {emisor.codigo_postal}<br/>'
@@ -249,14 +260,15 @@ class ImpresionComprobante:
             ('LEADING', (0, 0), (-1, -1), 5.7),
         ])
         canvas.saveState()
-        ruta_logo = sep.join(self._ruta_logos) + sep + self._archivo_logo
-        canvas.drawImage(
-            ruta_logo,
-            7.0556 * mm,
-            240.50 * mm,
-            width=36.49 * mm,
-            height=32.10 * mm
-        )
+        if self._archivo_logo != '':
+            ruta_logo = sep.join(self._ruta_logos) + sep + self._archivo_logo
+            canvas.drawImage(
+                ruta_logo,
+                7.0556 * mm,
+                240.50 * mm,
+                width=36.49 * mm,
+                height=32.10 * mm
+            )
         # Marcos
         canvas.setStrokeColorRGB(float(rojo), float(verde), float(azul))
         # Marcos Cabecera
@@ -392,9 +404,9 @@ class ImpresionComprobante:
                 concepto.cantidad,
                 concepto.clave_unidad,
                 concepto.clave_prod_serv,
-                concepto.descripcion,
-                concepto.valor_unitario,
-                concepto.importe,
+                Paragraph(concepto.descripcion, styles['Normal']),
+                f'${float(concepto.valor_unitario):,.2f}',
+                f'${float(concepto.importe):,.2f}',
             ]
             lista_detalle.append(fila)
         # Detalle
@@ -413,7 +425,7 @@ class ImpresionComprobante:
         estilo_tabla_detalle = TableStyle([
             ('SIZE', (0, 0), (-1, -1), 9),
             ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold')
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ])
         tabla_detalle.setStyle(estilo_tabla_detalle)
         t = tabla_detalle.split(201.79 * mm, 119.94 * mm)
@@ -554,9 +566,9 @@ class ImpresionPago(ImpresionComprobante):
                 pago.docto_relacionado.moneda_dr,
                 pago.docto_relacionado.metodo_pago_dr,
                 pago.docto_relacionado.num_parcialidad,
-                pago.docto_relacionado.imp_saldo_ant,
-                pago.docto_relacionado.imp_pagado,
-                pago.docto_relacionado.imp_saldo_insoluto,
+                f'${float(pago.docto_relacionado.imp_saldo_ant):,.2f}',
+                f'${float(pago.docto_relacionado.imp_pagado):,.2f}',
+                f'${float(pago.docto_relacionado.imp_saldo_insoluto):,.2f}',
             ]
             lista_detalle.append(fila)
         # Detalle

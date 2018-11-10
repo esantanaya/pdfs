@@ -9,10 +9,11 @@ from comprobante import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
                    Receptor, TimbreFiscalDigital)
 
 
-def ordena_archivos(agencia, mes_anio, directorio):
+def ordena_archivos(agencia, mes_anio, directorio, tipo):
     print(f'Ordenando archivos...')
-    patron = r'\d{2}\-UA03\w{3}\-\w{7}\.xml' #Para recibos
-    ruta_archivos = os.sep.join(directorio) + os.sep + agencia + os.sep + mes_anio
+    patron = r'\d{2}\-' + tipo + r'\w{3}\-\w{7}\.xml' #Para recibos
+    ruta_archivos = (os.sep.join(directorio) + os.sep + agencia + os.sep +
+                     mes_anio)
     try:
         archivos = os.listdir(ruta_archivos)
         archivos_validos = re.findall(patron, '|'.join(archivos))
@@ -184,18 +185,37 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
     return comprobante
 
 def main_pagos():
-    agencia = 'APA040128N75'
-    mes_anio = '102018'
+    agencias = {
+        1: 'ACE050912GZ0',
+        2: 'APA040128N75',
+        3: 'RCA100823GI9',
+        4: 'ACA080131IL5',
+        5: 'AIQ070917FVA',
+    }
+    tipos = {
+        'Pagos': 'UA29',
+        'Notas': 'UD03',
+        'Credito': 'UA03'
+    }
+    num = int(input(f'Selecciona una agencia de la lista {agencias}\n'))
+    agencia = agencias[num]
+    mes_anio = input(f'Ingresa el mes y anio: \n')
+    indice = input(f'Selecciona el tipo: {tipos} \n')
+    tipo = tipos[indice]
+
     ruta = [
         '\\\\192.168.24.10',
         'E$',
         'CFD',
         'Almacen',
     ]
-    for archivo_valido in ordena_archivos(agencia, mes_anio, ruta):
+    for archivo_valido in ordena_archivos(agencia, mes_anio, ruta, tipo):
         try:
             comp = leer_archivo(archivo_valido, mes_anio, ruta, agencia)
-            imp = ImpresionComprobante(comp)
+            if tipo != 'UA29':
+                imp = ImpresionComprobante(comp)
+            else:
+                imp = ImpresionPago(comp)
             imp.genera_pdf()
         except KeyError as ke:
             traceback.print_exc()
