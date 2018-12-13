@@ -1,5 +1,6 @@
 from os import sep
 from re import match
+import configparser
 
 from reportlab.graphics import renderPDF
 from reportlab.graphics.barcode import qr
@@ -87,37 +88,18 @@ class ImpresionComprobante:
         self._codigo_color_lineas = codigo_color_lineas
 
     def _lee_ini(self):
-        with open('layout.ini', encoding='utf-8') as config:
-            bandera = ''
-            for linea in config:
-                linea = linea.strip()
-                if linea.startswith('[') and linea.endswith(']'):
-                    titulo = linea[1:-1]
-                    if titulo == 'Configuracion':
-                        bandera = 'conf'
-                    elif match(r'^[A-ZÑ&]{3,4}\d{6}[A-Z\d]{3}', titulo):
-                        bandera = 'emisor'
-                elif '=' in linea:
-                    llave, valor = linea.split('=')
-                    if bandera == 'conf':
-                        if llave == 'ruta_logos':
-                            self._ruta_logos = valor.split('|')
-                    elif (bandera == 'emisor'
-                          and titulo == self._comprobante.emisor.rfc):
-                        if llave == 'CN':
-                            self._comprobante.emisor.calle_numero = valor
-                        elif llave == 'C':
-                            self._comprobante.emisor.colonia = valor
-                        elif llave == 'CD':
-                            self._comprobante.emisor.ciudad = valor
-                        elif llave == 'EP':
-                            self._comprobante.emisor.estado_pais = valor
-                        elif llave == 'CP':
-                            self._comprobante.emisor.codigo_postal = valor
-                        elif llave == 'LG':
-                            self._archivo_logo = valor
-                        elif llave == 'CL':
-                            self._codigo_color_lineas = valor
+        config = configparser.ConfigParser()
+        config.read('layout.ini', encoding='utf-8')
+        self._ruta_logos = config['Configuracion'].get('ruta_logos').split('|')
+        if self._comprobante.emisor.rfc in config:
+            emisor = config[self._comprobante.emisor.rfc]
+            self._comprobante.emisor.calle_numero = emisor.get('CN')
+            self._comprobante.emisor.colonia = emisor.get('C')
+            self._comprobante.emisor.ciudad = emisor.get('CD')
+            self._comprobante.emisor.estado_pais = emisor.get('EP')
+            self._comprobante.emisor.codigo_postal = emisor.get('CP')
+            self._archivo_logo = emisor.get('LG')
+            self._codigo_color_lineas = emisor.get('CL')
 
     def _primera_hoja(self, canvas, document):
         canvas.setAuthor('Enrique Santana')
