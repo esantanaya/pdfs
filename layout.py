@@ -1,5 +1,4 @@
 from os import sep
-from re import match
 import configparser
 
 from reportlab.graphics import renderPDF
@@ -15,7 +14,7 @@ from reportlab.platypus import (Frame, Paragraph, SimpleDocTemplate, Spacer,
                                 Table, TableStyle)
 
 pdfmetrics.registerFont(TTFont('Bauhaus',
-                        sep.join(['recursos', 'fonts','BAUHS93.TTF'])))
+                        sep.join(['recursos', 'fonts', 'BAUHS93.TTF'])))
 
 
 class ImpresionComprobante:
@@ -158,7 +157,8 @@ class ImpresionComprobante:
         small.splitLongWords = True
         small.spaceShrinkage = 0.05
 
-        # TODO: Quitar este feo if, lo ideal sería que obtuviera la fuenta y el color de layout.ini 
+        # TODO: Quitar este feo if, lo ideal sería que obtuviera la fuente
+        # y el color de layout.ini
         if self._comprobante.emisor.rfc == 'AIQ070917FVA':
             datos_emisor = (f'<font name=Bauhaus color=#548235 size=14>'
                             + f'{emisor.nombre}</font><br/><para leading=8>')
@@ -166,11 +166,11 @@ class ImpresionComprobante:
             datos_emisor = f'<b>{emisor.nombre}</b><br/><para leading=8>'
 
         datos_emisor += (f'<font size=8>{emisor.calle_numero}<br/>'
-                        + f'COL. {emisor.colonia}<br/>'
-                        + f'{emisor.ciudad}<br/>{emisor.estado_pais}<br/>'
-                        + f'C.P. {emisor.codigo_postal}<br/>'
-                        + f'R.F.C. {emisor.rfc}<br/>'
-                        + f'Regímen fiscal: {emisor.regimen_fiscal}</font>')
+                         + f'COL. {emisor.colonia}<br/>'
+                         + f'{emisor.ciudad}<br/>{emisor.estado_pais}<br/>'
+                         + f'C.P. {emisor.codigo_postal}<br/>'
+                         + f'R.F.C. {emisor.rfc}<br/>'
+                         + f'Regímen fiscal: {emisor.regimen_fiscal}</font>')
 
         titulos_receptor = [[
             'Receptor del comprobante', 'Clave:',
@@ -213,7 +213,8 @@ class ImpresionComprobante:
             [Paragraph(self._comprobante.timbre.sello_cfd, small)],
             ['Sello del SAT:'],
             [Paragraph(self._comprobante.timbre.sello_sat, small)],
-            ['Cadena original del complemento de certificación digital del SAT:'],
+            [('Cadena original del complemento de certificación digital del '
+              'SAT:')],
             [Paragraph(self._comprobante.timbre.cadena_original, small)],
         ]
 
@@ -334,7 +335,8 @@ class ImpresionComprobante:
         # QR
         qr_code = qr.QrCodeWidget(
             f'?re={emisor.rfc}&rr={self._comprobante.receptor.rfc}'
-            + f'&tt={self._comprobante.total}&id={self._comprobante.timbre.uuid}'
+            + f'&tt={self._comprobante.total}&id='
+            + f'{self._comprobante.timbre.uuid}'
         )
         qr_code.barWidth = 30 * mm
         qr_code.barHeight = 30 * mm
@@ -446,7 +448,6 @@ class ImpresionComprobante:
             print(fnfe)
 
     def genera_titulos(self):
-        sucursal = self._comprobante.nombre_archivo[0:2]
         genero = self._comprobante.nombre_archivo[3]
         naturaleza = self._comprobante.nombre_archivo[4]
         grupo = self._comprobante.nombre_archivo[5:7]

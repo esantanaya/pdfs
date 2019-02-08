@@ -6,4 +6,10 @@ firefox/
 *.F33
 *.xml
 *.log
+*.swp
+*.swo
+build/
+dist/
+test/
+reportes.egg-info/
 *~*

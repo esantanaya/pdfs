@@ -145,8 +145,10 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
     print(f'leyendo archivo {archivo_f33}')
     try:
         with open(archivo_f33, 'r') as f33:
-            lineas = {x.rstrip().split('|')[0]: x.rstrip().split('|')[
-            1:] for x in f33}
+            lineas = {
+                x.rstrip().split('|')[0]:
+                x.rstrip().split('|')[1:] for x in f33
+            }
             comprobante.total_letra = lineas['DOCUMENTO'][15]
             comprobante.cuenta_pago = lineas['DOCUMENTO'][13]
             comprobante.receptor.clave = lineas['CLIENTE'][0]
@@ -162,8 +164,10 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
         try:
             with open(archivo_error, 'r') as f33:
                 print(f'Encontramos el F33 en errores!')
-                lineas = {x.rstrip().split('|')[0]: x.rstrip().split('|')[
-                1:] for x in f33}
+                lineas = {
+                    x.rstrip().split('|')[0]:
+                    x.rstrip().split('|')[1:] for x in f33
+                }
                 comprobante.total_letra = lineas['DOCUMENTO'][15]
                 comprobante.cuenta_pago = lineas['DOCUMENTO'][13]
                 comprobante.receptor.clave = lineas['CLIENTE'][0]
@@ -177,11 +181,6 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
             print(f'{e} | tampoco lo encontramos en errores!')
             with open('errores.log', '+a') as log:
                 log.write('\n'+str(e))
-    except Exception as e:
-        print(e)
-        with open('errores.log', '+a') as log:
-            log.write('\n'+str(e))
-
     return comprobante
 
 def main_pagos():

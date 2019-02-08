@@ -7,8 +7,12 @@ name = "pypi"
 pillow = "*"
 lxml = "*"
 reportlab = "*"
+pyinstaller = "*"
 
 [dev-packages]
+flake8 = "*"
+pytest = "*"
+reportes = {editable = true,path = "."}
 
 [requires]
 python_version = "3.7"
