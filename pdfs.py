@@ -6,12 +6,14 @@ from lxml import etree as ET
 
 from layout import ImpresionComprobante, ImpresionPago
 from comprobante import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
-                   Receptor, TimbreFiscalDigital)
+                         Receptor, TimbreFiscalDigital)
 
 
 def ordena_archivos(agencia, mes_anio, directorio, tipo):
     print(f'Ordenando archivos...')
-    patron = r'\d{2}\-' + tipo + r'\w{3}\-\w{7}\.xml' #Para recibos
+
+    # Para recibos
+    patron = r'\d{2}\-' + tipo + r'\w{3}\-\w{7}\.xml'
     ruta_archivos = (os.sep.join(directorio) + os.sep + agencia + os.sep +
                      mes_anio)
     try:
@@ -22,10 +24,7 @@ def ordena_archivos(agencia, mes_anio, directorio, tipo):
         print(e)
 
 
-def leer_archivo(archivo, mes_anio, ruta, agencia):
-    print(f'leyendo archivo {archivo}')
-    ruta = os.sep.join(ruta)
-    tree = ET.parse(ruta + os.sep + agencia + os.sep + mes_anio + os.sep + archivo)
+def construye_comprobante(tree, archivo):
     root = tree.getroot()
 
     ns_cfdi = '{http://www.sat.gob.mx/cfd/3}'
@@ -80,9 +79,8 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
                     )
 
     pagos = []
-    if element_pagos != None:
+    if element_pagos is not None:
         for element_pago in element_pagos:
-            total_pagos = 0
             element_docto = element_pago.find(
                 f'{ns_pago10}DoctoRelacionado')
             docto = DoctoRelacionado(
@@ -131,17 +129,10 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
             comprobante.forma_pago = root.attrib['FormaPago']
             comprobante.metodo_pago = root.attrib['MetodoPago']
 
-    ruta_f33 = [
-        '\\\\192.168.24.10',
-        'E$',
-        'CFD',
-        'Intercambio',
-        'Procesado',
-        f'{emisor.rfc}',
-        mes_anio,
-        f'{emisor.rfc}-{archivo[:-4]}.F33',
-    ]
-    archivo_f33 = os.sep.join(ruta_f33)
+    return comprobante
+
+
+def compl_comp_f33(comprobante, archivo_f33):
     print(f'leyendo archivo {archivo_f33}')
     try:
         with open(archivo_f33, 'r') as f33:
@@ -181,7 +172,31 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
             print(f'{e} | tampoco lo encontramos en errores!')
             with open('errores.log', '+a') as log:
                 log.write('\n'+str(e))
+
     return comprobante
+
+
+def leer_archivo(archivo, mes_anio, ruta, agencia):
+    print(f'leyendo archivo {archivo}')
+    ruta = os.sep.join(ruta)
+    tree = ET.parse(ruta + os.sep + agencia + os.sep + mes_anio + os.sep
+                    + archivo)
+    comprobante = construye_comprobante(tree, archivo)
+    ruta_f33 = [
+        '\\\\192.168.24.10',
+        'E$',
+        'CFD',
+        'Intercambio',
+        'Procesado',
+        f'{comprobante.emisor.rfc}',
+        mes_anio,
+        f'{comprobante.emisor.rfc}-{archivo[:-4]}.F33',
+    ]
+    archivo_f33 = os.sep.join(ruta_f33)
+    comprobante = compl_comp_f33(comprobante, archivo_f33)
+
+    return comprobante
+
 
 def main_pagos():
     agencias = {
@@ -220,7 +235,8 @@ def main_pagos():
         except KeyError as ke:
             traceback.print_exc()
             with open('errores.log', '+a', encoding='UTF-8') as log:
-                log.write(f'\n [Error] en {agencia}-{archivo_valido} no se encontró {str(ke)}')
+                log.write(f'\n [Error] en {agencia}-{archivo_valido} no se '
+                          f'encontró {str(ke)}')
             continue
         except Exception as e:
             print(e)
@@ -228,6 +244,7 @@ def main_pagos():
             with open('errores.log', '+a') as log:
                 log.write('\n'+str(e))
             continue
+
 
 if __name__ == '__main__':
     main_pagos()

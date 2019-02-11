@@ -10,6 +10,5 @@ firefox/
 *.swo
 build/
 dist/
-test/
 reportes.egg-info/
 *~*

@@ -20,6 +20,7 @@ pdfmetrics.registerFont(TTFont('Bauhaus',
 class ImpresionComprobante:
     def __init__(self, comprobante):
         self._comprobante = comprobante
+        self.nombre = self._comprobante.nombre_archivo[:-4] + '.pdf'
         self._ruta_logos = ''
         self._archivo_logo = ''
         self._codigo_color_lineas = ''
@@ -364,7 +365,7 @@ class ImpresionComprobante:
 
     def _define_layout(self):
         documento = SimpleDocTemplate(
-            self._comprobante.nombre_archivo[:-4] + '.pdf',
+            self.nombre,
             pagesize=letter,
             rightMargin=7.0556 * mm,
             leftMargin=7.0556 * mm,
@@ -581,3 +582,4 @@ class ImpresionPago(ImpresionComprobante):
 
         documento.build(flowables, onFirstPage=self._primera_hoja,
                         onLaterPages=self._primera_hoja)
+
