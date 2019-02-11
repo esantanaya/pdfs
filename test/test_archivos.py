@@ -18,7 +18,7 @@ def documento(ruta, mes_anio, agencia, tipo):
         nombre = f'{agencia}-{tipo}.pdf'
         archivo = ordena_archivos(agencia, mes_anio, ruta, tipo)[0]
         comp = leer_archivo(archivo, mes_anio, ruta, agencia)
-        if tipo == 'UA20':
+        if tipo == 'UA29':
             imp = ImpresionPago(comp)
         else:
             imp = ImpresionComprobante(comp)
