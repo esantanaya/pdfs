@@ -190,6 +190,7 @@ def main_pagos():
         3: 'RCA100823GI9',
         4: 'ACA080131IL5',
         5: 'AIQ070917FVA',
+        6: 'QMO710112RH2',
     }
     tipos = {
         'Pagos': 'UA29',
