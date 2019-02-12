@@ -190,7 +190,7 @@ class Comprobante:
         self._pagos = pagos
 
     @property
-    def timbre    (self):
+    def timbre(self):
         return self._timbre
 
     @timbre.setter
