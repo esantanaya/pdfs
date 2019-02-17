@@ -18,17 +18,14 @@ pdfmetrics.registerFont(TTFont('Bauhaus',
 
 
 class ImpresionComprobante:
-    def __init__(self, comprobante):
-        self._comprobante = comprobante
-        self.nombre = self._comprobante.nombre_archivo[:-4] + '.pdf'
-        self._ruta_logos = ''
-        self._archivo_logo = ''
-        self._codigo_color_lineas = ''
-        self.pdf_titulo = 'Comprobante Físcal'
+    def _propiedades(self):
+        self._autor = 'Enrique Santana Anaya'
+        self._titulo = 'Representación impresa de un CFDI'
+        self._pdf_titulo = 'Comprobante Físcal'
+        self._creador = 'ProLeCSA'
 
-        self.resuelve_codigos()
-
-        self.info_extra = [
+    def _datos_pie(self):
+        self._info_extra = [
             [self._comprobante.total_letra, '', '', ''],
             [
                 'Forma de pago:',
@@ -43,17 +40,29 @@ class ImpresionComprobante:
             [
                 'Método de pago:',
                 self._comprobante.metodo_pago,
-
             ],
         ]
         subtotal = float(self._comprobante.subtotal)
         total = float(self._comprobante.total)
         impuestos = total - subtotal
-        self.info_totales = [
+        self._info_totales = [
             ['Subtotal :', f'${subtotal:,.2f}'],
             ['I.V.A. 0.16% :', f'${impuestos:,.2f}'],
             ['Total :', f'${total:,.2f}'],
         ]
+
+    def _rutas(self):
+        self.nombre = self._comprobante.nombre_archivo[:-4] + '.pdf'
+        self._ruta_logos = ''
+        self._archivo_logo = ''
+        self._codigo_color_lineas = ''
+
+    def __init__(self, comprobante):
+        self._comprobante = comprobante
+        self._propiedades()
+        self._rutas()
+        self.resuelve_codigos()
+        self._datos_pie()
 
     @property
     def comprobante(self):
@@ -101,11 +110,15 @@ class ImpresionComprobante:
             self._archivo_logo = emisor.get('LG')
             self._codigo_color_lineas = emisor.get('CL')
 
+    def _propiedades_canvas(self, canvas):
+        canvas.setAuthor(self._autor)
+        canvas.setTitle(self._titulo)
+        canvas.setSubject(self._pdf_titulo)
+        canvas.setCreator(self._creador)
+        return canvas
+
     def _primera_hoja(self, canvas, document):
-        canvas.setAuthor('Enrique Santana')
-        canvas.setTitle('Representación impresa CFDI')
-        canvas.setSubject(self.pdf_titulo)
-        canvas.setCreator('ProLeCSA')
+        canvas = self._propiedades_canvas(canvas)
         emisor = self._comprobante.emisor
         receptor = self._comprobante.receptor
         rojo, verde, azul = self._codigo_color_lineas[1:-1].split(',')
@@ -178,7 +191,8 @@ class ImpresionComprobante:
             self._comprobante.receptor.clave,
         ]]
         datos_receptor = (f'<font size=8>{receptor.nombre}</font><br/><br/>'
-                          + f'{receptor.calle}<br/>COL. {receptor.colonia}<br/>'
+                          + f'{receptor.calle}<br/>'
+                          + f'COL. {receptor.colonia}<br/>'
                           + f'{receptor.municipio}<br/>'
                           + f'{receptor.estado}, {receptor.pais}<br/>'
                           + f'C.P. {receptor.codigo_postal}<br/>'
@@ -295,7 +309,7 @@ class ImpresionComprobante:
 
         # Pie
         tabla_pie = Table(
-            self.info_extra,
+            self._info_extra,
             colWidths=[
                 25.41 * mm,
                 65.99 * mm,
@@ -310,7 +324,7 @@ class ImpresionComprobante:
         frame_pie_datos.addFromList(flowables_pie_datos, canvas)
 
         tabla_totales = Table(
-            self.info_totales,
+            self._info_totales,
             colWidths=[32.59 * mm, 23.85 * mm]
         )
         tabla_totales.setStyle(estilo_tabla_totales)
@@ -428,22 +442,22 @@ class ImpresionComprobante:
                     if linea.startswith('[') and linea.endswith(']'):
                         titulo = linea[1:-1]
                     elif '=' in linea:
-                        clave, descripcion = linea.split('=')
+                        clave, des = linea.split('=')
                         if (
                             titulo == 'FormasPago' and
                             self._comprobante.forma_pago == clave
                         ):
-                            self._comprobante.forma_pago += f' {descripcion}'
+                            self._comprobante.forma_pago += f' {des}'
                         if (
                             titulo == 'UsosCFDI' and
                             self._comprobante.receptor.uso_cfdi == clave
                         ):
-                            self._comprobante.receptor.uso_cfdi += f' {descripcion}'
+                            self._comprobante.receptor.uso_cfdi += f' {des}'
                         if (
                             titulo == 'MetodosPago'
                             and self._comprobante.metodo_pago == clave
                         ):
-                            self._comprobante.metodo_pago += f' {descripcion}'
+                            self._comprobante.metodo_pago += f' {des}'
 
         except FileNotFoundError as fnfe:
             print(fnfe)
@@ -452,7 +466,6 @@ class ImpresionComprobante:
         genero = self._comprobante.nombre_archivo[3]
         naturaleza = self._comprobante.nombre_archivo[4]
         grupo = self._comprobante.nombre_archivo[5:7]
-        tipo = self._comprobante.nombre_archivo[7:10]
 
         if self._comprobante.tipo_comprobante == 'P':
             return 'PAGO'
@@ -471,12 +484,20 @@ class ImpresionComprobante:
         self._define_layout()
 
 
-class ImpresionPago(ImpresionComprobante):
+class ImpresionServicio(ImpresionComprobante):
     def __init__(self, comprobante):
         super().__init__(comprobante)
-        self.pdf_titulo = 'Complemento de Pago'
 
-        self.info_extra = [
+
+class ImpresionPago(ImpresionComprobante):
+    def _propiedades(self):
+        self._autor = 'Enrique Santana Anaya'
+        self._titulo = 'Representación impresa de un CFDI'
+        self._pdf_titulo = 'Complemento de Pago'
+        self._creador = 'ProLeCSA'
+
+    def _datos_pie(self):
+        self._info_extra = [
             [self._comprobante.total_letra, '', '', ''],
             [
                 'Forma de pago:',
@@ -493,9 +514,12 @@ class ImpresionPago(ImpresionComprobante):
             ['Número de cuenta:', self._comprobante.cuenta_pago, '', ''],
         ]
         monto = float(self._comprobante.pagos[0].monto)
-        self.info_totales = [
+        self._info_totales = [
             ['Total:', f'${monto:,.2f}'],
         ]
+
+    def __init__(self, comprobante):
+        super().__init__(comprobante)
 
     def resuelve_codigos(self):
         try:
@@ -505,17 +529,17 @@ class ImpresionPago(ImpresionComprobante):
                     if linea.startswith('[') and linea.endswith(']'):
                         titulo = linea[1:-1]
                     elif '=' in linea:
-                        clave, descripcion = linea.split('=')
+                        clave, des = linea.split('=')
                         if (
                             titulo == 'FormasPago' and
                             self._comprobante.pagos[0].forma_pago_p == clave
                         ):
-                            self._comprobante.pagos[0].forma_pago_p += f' {descripcion}'
+                            self._comprobante.pagos[0].forma_pago_p += f' {des}'
                         if (
                             titulo == 'UsosCFDI' and
                             self._comprobante.receptor.uso_cfdi == clave
                         ):
-                            self._comprobante.receptor.uso_cfdi += f' {descripcion}'
+                            self._comprobante.receptor.uso_cfdi += f' {des}'
         except FileNotFoundError as fnfe:
             print(fnfe)
 
@@ -528,7 +552,6 @@ class ImpresionPago(ImpresionComprobante):
             topMargin=72.55 * mm,
             bottomMargin=86.79 * mm,
         )
-        styles = getSampleStyleSheet()
         flowables = []
         lista_detalle = [
             [
@@ -582,4 +605,3 @@ class ImpresionPago(ImpresionComprobante):
 
         documento.build(flowables, onFirstPage=self._primera_hoja,
                         onLaterPages=self._primera_hoja)
-

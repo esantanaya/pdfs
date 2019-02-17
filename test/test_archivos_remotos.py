@@ -1,7 +1,7 @@
 import os
 
 from pdfs import leer_archivo, ordena_archivos
-from layout import ImpresionPago, ImpresionComprobante
+from layout import ImpresionPago, ImpresionComprobante, ImpresionServicio
 
 ruta = [r'\\192.168.24.10', 'e$', 'cfd', 'almacen']
 mes_anio = '022019'
@@ -20,6 +20,8 @@ def documento(ruta, mes_anio, agencia, tipo):
         comp = leer_archivo(archivo, mes_anio, ruta, agencia)
         if tipo == 'UA29':
             imp = ImpresionPago(comp)
+        elif tipo == 'UD10':
+            imp = ImpresionServicio(comp)
         else:
             imp = ImpresionComprobante(comp)
         imp.genera_pdf()
@@ -43,3 +45,6 @@ def test_credito():
     for agencia in agencias():
         documento(ruta, mes_anio, agencia, 'UA03')
 
+def test_servicio():
+    for agencia in agencias():
+        documento(ruta, mes_anio, agencia, 'UD10')
