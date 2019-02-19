@@ -412,6 +412,7 @@ class Concepto:
         self,
         cantidad,
         clave_prod_serv,
+        clave_interna,
         clave_unidad,
         descripcion,
         importe,
@@ -420,6 +421,7 @@ class Concepto:
     ):
         self._cantidad = cantidad
         self._clave_prod_serv = clave_prod_serv
+        self._clave_interna = clave_interna
         self._clave_unidad = clave_unidad
         self._descripcion = descripcion
         self._importe = importe
@@ -440,6 +442,14 @@ class Concepto:
     @clave_prod_serv.setter
     def clave_prod_serv(self, clave_prod_serv):
         self._clave_prod_serv = clave_prod_serv
+    
+    @property
+    def clave_interna(self):
+        return self._clave_interna
+
+    @clave_interna.setter
+    def clave_interna(self, clave_interna):
+        self._clave_interna = clave_interna
 
     @property
     def clave_unidad(self):

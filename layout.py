@@ -36,6 +36,8 @@ class ImpresionComprobante:
             [
                 'Uso de CFDI:',
                 self._comprobante.receptor.uso_cfdi,
+                'Tipo de Comprobante:',
+                self._comprobante.tipo_comprobante,
             ],
             [
                 'Método de pago:',
@@ -59,10 +61,10 @@ class ImpresionComprobante:
 
     def __init__(self, comprobante):
         self._comprobante = comprobante
+        self._styles = getSampleStyleSheet()
         self._propiedades()
         self._rutas()
         self.resuelve_codigos()
-        self._datos_pie()
 
     @property
     def comprobante(self):
@@ -117,12 +119,74 @@ class ImpresionComprobante:
         canvas.setCreator(self._creador)
         return canvas
 
-    def _primera_hoja(self, canvas, document):
-        canvas = self._propiedades_canvas(canvas)
-        emisor = self._comprobante.emisor
-        receptor = self._comprobante.receptor
+    def _set_tamanos(self):
+        self._small = ParagraphStyle('Pequeña')
+        self._small.fontSize = 7
+        self._small.leading = 7
+        self._small.splitLongWords = True
+        self._small.spaceShrinkage = 0.05
+
+    def _set_estilos(self):
+        self._estilo_tabla_titulos = TableStyle([
+            ('LEFTPADDING', (1, 0), (-1, -1), 4),
+        ])
+        self._estilo_tabla_doc = TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
+            ('TEXTCOLOR', (0, 1), (0, 1), red),
+            ('SIZE', (0, 7), (0, 7), 6),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 7), (0, 7), 8),
+        ])
+        self._estilo_tabla_info = TableStyle([
+            ('SIZE', (0, 0), (-1, -1), 8),
+            ('LEADING', (0, 0), (-1, -1), 5.7),
+            ('SPAN', (0, 0), (3, 0)),
+        ])
+        self._estilo_tabla_totales = TableStyle([
+            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+            ('LEADING', (0, 0), (-1, -1), 5.7),
+        ])
+        self._estilo_tabla_info_qr = TableStyle([
+            ('SIZE', (0, 0), (-1, -1), 8),
+            ('LEADING', (0, 0), (-1, -1), 5.7),
+        ])
+
+    def _set_marcos(self, canvas):
         rojo, verde, azul = self._codigo_color_lineas[1:-1].split(',')
-        frame_pie_datos = Frame(
+        # Marcos
+        canvas.setStrokeColorRGB(float(rojo), float(verde), float(azul))
+        # Marcos Cabecera
+        canvas.roundRect(7.0556 * mm, 207.58 * mm, 155.22 * mm, 32.46 * mm, 5)
+        canvas.roundRect(162.9856 * mm, 207.58 * mm, 45.86 * mm, 64.56 * mm, 5)
+        # Marco Detalle
+        canvas.roundRect(7.0556 * mm, 87.01 * mm, 201.79 * mm, 119.94 * mm, 5)
+        # Marcos Pie
+        canvas.roundRect(7.0556 * mm, 69.02 * mm, 144.64 * mm, 16.93 * mm, 5)
+        canvas.roundRect(152.3256 * mm, 69.02 * mm, 56.44 * mm, 16.93 * mm, 5)
+        canvas.roundRect(7.0556 * mm, 13.99 * mm, 201.79 * mm, 54.50 * mm, 5)
+        canvas.line(7.0556 * mm, 13.10 * mm, 208.8456 * mm, 13.10 * mm)
+        return canvas
+
+    def _set_lineas(self, canvas):
+        # Líneas Grises punteadas
+        canvas.setStrokeColorRGB(.80, .80, .80)  # Gris Claro
+        canvas.setDash([0.5 * mm, 0.5 * mm], 0)
+        # Líneas Grises punteadas Cabecera
+        canvas.line(7.0556 * mm, 233.86 * mm, 162.2756 * mm, 233.86 * mm)
+        canvas.line(135.9956 * mm, 240.04 * mm, 135.9956 * mm, 233.86 * mm)
+        canvas.line(147.2856 * mm, 240.04 * mm, 147.2856 * mm, 233.86 * mm)
+        y_factura = 212.34 * mm
+        canvas.line(162.9856 * mm, y_factura, 208.8456 * mm, y_factura)
+        for _ in range(12):
+            y_factura += 4.59 * mm
+            canvas.line(162.9856 * mm, y_factura, 208.8456 * mm, y_factura)
+        # Líneas Grises punteadas Detalle
+        canvas.line(7.0556 * mm, 199.37 * mm, 208.8456 * mm, 199.37 * mm)
+        return canvas
+
+    def _config_pie(self):
+        self._frame_pie_datos = Frame(
             7.0556 * mm,
             69.02 * mm,
             width=144.64 * mm,
@@ -132,7 +196,7 @@ class ImpresionComprobante:
             topPadding=0,
             bottomPadding=0,
         )
-        frame_pie_totales = Frame(
+        self._frame_pie_totales = Frame(
             152.3256 * mm,
             69.02 * mm,
             width=56.44 * mm,
@@ -142,7 +206,7 @@ class ImpresionComprobante:
             topPadding=0,
             bottomPadding=0,
         )
-        frame_pie_info = Frame(
+        self._frame_pie_info = Frame(
             38.3256 * mm,
             13.99 * mm,
             width=170.52 * mm,
@@ -152,16 +216,60 @@ class ImpresionComprobante:
             topPadding=0,
             bottomPadding=0,
         )
-        flowables_pie_datos = []
-        flowables_pie_totales = []
-        flowables_pie_info = []
-        styles = getSampleStyleSheet()
-        small = ParagraphStyle('Pequeña')
-        small.fontSize = 7
-        small.leading = 7
-        small.splitLongWords = True
-        small.spaceShrinkage = 0.05
+        self._flowables_pie_datos = []
+        self._flowables_pie_totales = []
+        self._flowables_pie_info = []
+        tabla_pie = Table(
+            self._info_extra,
+            colWidths=[
+                25.41 * mm,
+                48.99 * mm,
+                28.60 * mm,
+                25 * mm,
+            ]
+        )
+        tabla_pie.setStyle(self._estilo_tabla_info)
+        tabla_pie.vAlign = 'TOP'
+        tabla_pie.hAlign = 'LEFT'
+        self._flowables_pie_datos.append(tabla_pie)
 
+        tabla_totales = Table(
+            self._info_totales,
+            colWidths=[32.59 * mm, 23.85 * mm]
+        )
+        tabla_totales.setStyle(self._estilo_tabla_totales)
+        tabla_totales.vAlign = 'TOP'
+        tabla_totales.hAlign = 'LEFT'
+        self._flowables_pie_totales.append(tabla_totales)
+
+        info_info = [
+            ['Sello digital del CFDI:'],
+            [Paragraph(self._comprobante.timbre.sello_cfd, self._small)],
+            ['Sello del SAT:'],
+            [Paragraph(self._comprobante.timbre.sello_sat, self._small)],
+            [('Cadena original del complemento de certificación digital del '
+              'SAT:')],
+            [Paragraph(self._comprobante.timbre.cadena_original, self._small)],
+        ]
+        tabla_info = Table(
+            info_info,
+            colWidths=170.52 * mm,
+        )
+        tabla_info.setStyle(self._estilo_tabla_info_qr)
+        self._flowables_pie_info.append(tabla_info)
+
+    def _config_cabecera(self, canvas):
+        emisor = self._comprobante.emisor
+        receptor = self._comprobante.receptor
+        if self._archivo_logo != '':
+            ruta_logo = sep.join(self._ruta_logos) + sep + self._archivo_logo
+            canvas.drawImage(
+                ruta_logo,
+                7.0556 * mm,
+                240.50 * mm,
+                width=36.49 * mm,
+                height=32.10 * mm
+            )
         # TODO: Quitar este feo if, lo ideal sería que obtuviera la fuente
         # y el color de layout.ini
         if self._comprobante.emisor.rfc == 'AIQ070917FVA':
@@ -214,65 +322,8 @@ class ImpresionComprobante:
             ['Lugar expedición'],
             [lugar_expedicion],
         ]
-        info_info = [
-            ['Sello digital del CFDI:'],
-            [Paragraph(self._comprobante.timbre.sello_cfd, small)],
-            ['Sello del SAT:'],
-            [Paragraph(self._comprobante.timbre.sello_sat, small)],
-            [('Cadena original del complemento de certificación digital del '
-              'SAT:')],
-            [Paragraph(self._comprobante.timbre.cadena_original, small)],
-        ]
 
-        estilo_tabla_titulos = TableStyle([
-            ('LEFTPADDING', (1, 0), (-1, -1), 4),
-        ])
-        estilo_tabla_doc = TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
-            ('TEXTCOLOR', (0, 1), (0, 1), red),
-            ('SIZE', (0, 7), (0, 7), 6),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('TOPPADDING', (0, 7), (0, 7), 8),
-        ])
-        estilo_tabla_info = TableStyle([
-            ('SIZE', (0, 0), (-1, -1), 8),
-            ('LEADING', (0, 0), (-1, -1), 5.7),
-            ('SPAN', (0, 0), (3, 0)),
-        ])
-        estilo_tabla_totales = TableStyle([
-            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
-            ('LEADING', (0, 0), (-1, -1), 5.7),
-        ])
-        estilo_tabla_info_qr = TableStyle([
-            ('SIZE', (0, 0), (-1, -1), 8),
-            ('LEADING', (0, 0), (-1, -1), 5.7),
-        ])
-        canvas.saveState()
-        if self._archivo_logo != '':
-            ruta_logo = sep.join(self._ruta_logos) + sep + self._archivo_logo
-            canvas.drawImage(
-                ruta_logo,
-                7.0556 * mm,
-                240.50 * mm,
-                width=36.49 * mm,
-                height=32.10 * mm
-            )
-        # Marcos
-        canvas.setStrokeColorRGB(float(rojo), float(verde), float(azul))
-        # Marcos Cabecera
-        canvas.roundRect(7.0556 * mm, 207.58 * mm, 155.22 * mm, 32.46 * mm, 5)
-        canvas.roundRect(162.9856 * mm, 207.58 * mm, 45.86 * mm, 64.56 * mm, 5)
-        # Marco Detalle
-        canvas.roundRect(7.0556 * mm, 87.01 * mm, 201.79 * mm, 119.94 * mm, 5)
-        # Marcos Pie
-        canvas.roundRect(7.0556 * mm, 69.02 * mm, 144.64 * mm, 16.93 * mm, 5)
-        canvas.roundRect(152.3256 * mm, 69.02 * mm, 56.44 * mm, 16.93 * mm, 5)
-        canvas.roundRect(7.0556 * mm, 13.99 * mm, 201.79 * mm, 54.50 * mm, 5)
-        canvas.line(7.0556 * mm, 13.10 * mm, 208.8456 * mm, 13.10 * mm)
-
-        # Cabecera
-        para_emisor = Paragraph(datos_emisor, styles['Normal'])
+        para_emisor = Paragraph(datos_emisor, self._styles['Normal'])
         para_emisor.wrapOn(canvas, 106 * mm, 31 * mm)
         para_emisor.drawOn(canvas, 49.55 * mm, 247 * mm)
         titulos = Table(
@@ -281,7 +332,7 @@ class ImpresionComprobante:
                 128.94 * mm, 11.29 * mm, 15.522 * mm
             ],
         )
-        titulos.setStyle(estilo_tabla_titulos)
+        titulos.setStyle(self._estilo_tabla_titulos)
         titulos.wrapOn(canvas, 0, 0)
         titulos.drawOn(canvas, 6 * mm, 233.86 * mm)
         tabla_documento = Table(
@@ -289,56 +340,18 @@ class ImpresionComprobante:
             colWidths=45.86 * mm,
             rowHeights=4.61 * mm,
         )
-        tabla_documento.setStyle(estilo_tabla_doc)
+        tabla_documento.setStyle(self._estilo_tabla_doc)
         tabla_documento.wrapOn(canvas, 0, 0)
         tabla_documento.drawOn(canvas, 162.9856 * mm, 207.58 * mm)
-        para_receptor = Paragraph(datos_receptor, small)
+        para_receptor = Paragraph(datos_receptor, self._small)
         para_receptor.wrapOn(canvas, 155.22 * mm, 26.28 * mm)
         para_receptor.drawOn(canvas, 7.5 * mm, 212.58 * mm)
+        return canvas
 
-        # Pie
-        tabla_pie = Table(
-            self._info_extra,
-            colWidths=[
-                25.41 * mm,
-                65.99 * mm,
-                28.23 * mm,
-                25 * mm,
-            ]
-        )
-        tabla_pie.setStyle(estilo_tabla_info)
-        tabla_pie.vAlign = 'TOP'
-        tabla_pie.hAlign = 'LEFT'
-        flowables_pie_datos.append(tabla_pie)
-        frame_pie_datos.addFromList(flowables_pie_datos, canvas)
-
-        tabla_totales = Table(
-            self._info_totales,
-            colWidths=[32.59 * mm, 23.85 * mm]
-        )
-        tabla_totales.setStyle(estilo_tabla_totales)
-        tabla_totales.vAlign = 'TOP'
-        tabla_totales.hAlign = 'LEFT'
-        flowables_pie_totales.append(tabla_totales)
-        frame_pie_totales.addFromList(flowables_pie_totales, canvas)
-
-        tabla_info = Table(
-            info_info,
-            colWidths=170.52 * mm,
-        )
-        tabla_info.setStyle(estilo_tabla_info_qr)
-        flowables_pie_info.append(tabla_info)
-        frame_pie_info.addFromList(flowables_pie_info, canvas)
-        canvas.setFont('Helvetica-Bold', 14)
-        canvas.drawString(
-            36.955 * mm,
-            7.83 * mm,
-            'Este documento es una representación impresa de un CFDI.'
-        )
-
-        # QR
+    def _set_qr(self):
         qr_code = qr.QrCodeWidget(
-            f'?re={emisor.rfc}&rr={self._comprobante.receptor.rfc}'
+            f'?re={self._comprobante.emisor.rfc}'
+            + f'&rr={self._comprobante.receptor.rfc}'
             + f'&tt={self._comprobante.total}&id='
             + f'{self._comprobante.timbre.uuid}'
         )
@@ -347,23 +360,34 @@ class ImpresionComprobante:
         qr_code.qrVersion = 1
         d = Drawing()
         d.add(qr_code)
-        renderPDF.draw(d, canvas, 8 * mm, 37 * mm)
+        return d
 
-        # Líneas Grises punteadas
-        canvas.setStrokeColorRGB(.80, .80, .80)  # Gris Claro
-        canvas.setDash([0.5 * mm, 0.5 * mm], 0)
-        # Líneas Grises punteadas Cabecera
-        canvas.line(7.0556 * mm, 233.86 * mm, 162.2756 * mm, 233.86 * mm)
-        canvas.line(135.9956 * mm, 240.04 * mm, 135.9956 * mm, 233.86 * mm)
-        canvas.line(147.2856 * mm, 240.04 * mm, 147.2856 * mm, 233.86 * mm)
-        y_factura = 212.34 * mm
-        canvas.line(162.9856 * mm, y_factura, 208.8456 * mm, y_factura)
-        for _ in range(12):
-            y_factura += 4.59 * mm
-            canvas.line(162.9856 * mm, y_factura, 208.8456 * mm, y_factura)
-        # Líneas Grises punteadas Detalle
-        canvas.line(7.0556 * mm, 199.37 * mm, 208.8456 * mm, 199.37 * mm)
+    def _primera_hoja(self, canvas, document):
+        canvas = self._propiedades_canvas(canvas)
+        self._set_tamanos()
+        self._set_estilos()
+        self._datos_pie()
+        self._config_pie()
 
+        canvas.saveState()
+        canvas = self._set_marcos(canvas)
+        canvas = self._config_cabecera(canvas)
+
+        # Pie
+        self._frame_pie_datos.addFromList(self._flowables_pie_datos, canvas)
+        self._frame_pie_totales.addFromList(self._flowables_pie_totales,
+                                            canvas)
+        self._frame_pie_info.addFromList(self._flowables_pie_info, canvas)
+
+        canvas.setFont('Helvetica-Bold', 14)
+        canvas.drawString(
+            36.955 * mm,
+            7.83 * mm,
+            'Este documento es una representación impresa de un CFDI.'
+        )
+
+        renderPDF.draw(self._set_qr(), canvas, 8 * mm, 37 * mm)
+        canvas = self._set_lineas(canvas)
         canvas.restoreState()
 
     def _propiedades_documento(self):
@@ -379,7 +403,6 @@ class ImpresionComprobante:
 
     def _define_layout(self):
         documento = self._propiedades_documento()
-        styles = getSampleStyleSheet()
         flowables = []
         lista_detalle = [
             [
@@ -396,7 +419,7 @@ class ImpresionComprobante:
                 concepto.cantidad,
                 concepto.clave_unidad,
                 concepto.clave_prod_serv,
-                Paragraph(concepto.descripcion, styles['Normal']),
+                Paragraph(concepto.descripcion, self._styles['Normal']),
                 f'${float(concepto.valor_unitario):,.2f}',
                 f'${float(concepto.importe):,.2f}',
             ]
@@ -481,6 +504,143 @@ class ImpresionServicio(ImpresionComprobante):
     def __init__(self, comprobante):
         super().__init__(comprobante)
 
+    def _set_marcos(self, canvas):
+        rojo, verde, azul = self._codigo_color_lineas[1:-1].split(',')
+        canvas.setStrokeColorRGB(float(rojo), float(verde), float(azul))
+        # Marcos Cabecera
+        canvas.roundRect(7.0556 * mm, 207.58 * mm, 155.22 * mm, 32.46 * mm, 5)
+        canvas.roundRect(162.9856 * mm, 207.58 * mm, 45.86 * mm, 64.56 * mm, 5)
+        canvas.roundRect(7.0556 * mm, 168.04 * mm, 201.79 * mm, 38.81 * mm, 5)
+        # Marco Detalle
+        canvas.roundRect(7.0556 * mm, 87.01 * mm, 201.79 * mm, 80.3 * mm, 5)
+        # Marcos Pie
+        canvas.roundRect(7.0556 * mm, 69.02 * mm, 144.64 * mm, 16.93 * mm, 5)
+        canvas.roundRect(152.3256 * mm, 69.02 * mm, 56.44 * mm, 16.93 * mm, 5)
+        canvas.roundRect(7.0556 * mm, 13.99 * mm, 201.79 * mm, 54.50 * mm, 5)
+        canvas.line(7.0556 * mm, 13.10 * mm, 208.8456 * mm, 13.10 * mm)
+        return canvas
+
+    def _set_lineas(self, canvas):
+        # Líneas Grises punteadas
+        canvas.setStrokeColorRGB(.80, .80, .80)  # Gris Claro
+        canvas.setDash([0.5 * mm, 0.5 * mm], 0)
+        # Líneas Grises punteadas Cabecera
+        canvas.line(7.0556 * mm, 233.86 * mm, 162.2756 * mm, 233.86 * mm)
+        canvas.line(135.9956 * mm, 240.04 * mm, 135.9956 * mm, 233.86 * mm)
+        canvas.line(147.2856 * mm, 240.04 * mm, 147.2856 * mm, 233.86 * mm)
+        y_factura = 212.34 * mm
+        canvas.line(162.9856 * mm, y_factura, 208.8456 * mm, y_factura)
+        for _ in range(12):
+            y_factura += 4.59 * mm
+            canvas.line(162.9856 * mm, y_factura, 208.8456 * mm, y_factura)
+        # Líneas Grises punteadas Detalle
+        canvas.line(7.0556 * mm, 160 * mm, 208.8456 * mm, 160 * mm)
+        return canvas
+
+    def _propiedades_documento(self):
+        doc = SimpleDocTemplate(
+            self.nombre,
+            pagesize=letter,
+            rightMargin=7.0556 * mm,
+            leftMargin=7.0556 * mm,
+            topMargin=111.57 * mm,
+            bottomMargin=86.79 * mm,
+        )
+        return doc
+
+    def _segunda_cabecera(self):
+        [
+            ['Marca', 'Tipo Modelo', 'Año', 'Color', 'Número de serie'],
+            ['Kilometraje', 'Placas', 'Motor', 'Bonete', 'Referencia'],
+            ['Recepcionista', '', '', '', 'Siniestro'],
+        ]
+
+    def _primera_hoja(self, canvas, document):
+        canvas = self._propiedades_canvas(canvas)
+        self._set_tamanos()
+        self._set_estilos()
+        self._datos_pie()
+        self._config_pie()
+
+        canvas.saveState()
+        canvas = self._set_marcos(canvas)
+        canvas = self._config_cabecera(canvas)
+
+        # Pie
+        self._frame_pie_datos.addFromList(self._flowables_pie_datos, canvas)
+        self._frame_pie_totales.addFromList(self._flowables_pie_totales,
+                                            canvas)
+        self._frame_pie_info.addFromList(self._flowables_pie_info, canvas)
+
+        canvas.setFont('Helvetica-Bold', 14)
+        canvas.drawString(
+            36.955 * mm,
+            7.83 * mm,
+            'Este documento es una representación impresa de un CFDI.'
+        )
+
+        renderPDF.draw(self._set_qr(), canvas, 8 * mm, 37 * mm)
+        canvas = self._set_lineas(canvas)
+        canvas.restoreState()
+
+    def _define_layout(self):
+        documento = self._propiedades_documento()
+        flowables = []
+        lista_detalle = [
+            [
+                'Cant',
+                'Unidad',
+                'Clave SAT',
+                'Clave Interna',
+                'Descripción',
+                'Precio',
+                'Importe',
+            ],
+        ]
+        for concepto in self._comprobante.conceptos:
+            fila = [
+                concepto.cantidad,
+                concepto.clave_unidad,
+                concepto.clave_prod_serv,
+                concepto.clave_interna,
+                Paragraph(concepto.descripcion, self._styles['Normal']),
+                f'${float(concepto.valor_unitario):,.2f}',
+                f'${float(concepto.importe):,.2f}',
+            ]
+            lista_detalle.append(fila)
+        # Detalle
+        tabla_detalle = Table(
+            lista_detalle,
+            colWidths=[
+                9.45 * mm,
+                13.5 * mm,
+                23.98 * mm,
+                23.98 * mm,
+                71.93 * mm,
+                29.91 * mm,
+                24.40 * mm,
+            ],
+            repeatRows=1,
+        )
+        estilo_tabla_detalle = TableStyle([
+            ('SIZE', (0, 0), (-1, -1), 9),
+            ('ALIGN', (5, 0), (-1, -1), 'RIGHT'),
+            ('ALIGN', (0, 1), (1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ])
+        tabla_detalle.setStyle(estilo_tabla_detalle)
+        t = tabla_detalle.split(201.79 * mm, 80.3 * mm)
+        for x in t:
+            flowables.append(x)
+
+        documento.build(flowables, onFirstPage=self._primera_hoja,
+                        onLaterPages=self._primera_hoja)
+
+
+class ImpresionVehiculos(ImpresionServicio):
+    def __init__(self, comprobante):
+        super().__init__(comprobante)
+
 
 class ImpresionPago(ImpresionComprobante):
     def _propiedades(self):
@@ -537,14 +697,7 @@ class ImpresionPago(ImpresionComprobante):
             print(fnfe)
 
     def _define_layout(self):
-        documento = SimpleDocTemplate(
-            self._comprobante.nombre_archivo[:-4] + '.pdf',
-            pagesize=letter,
-            rightMargin=7.0556 * mm,
-            leftMargin=7.0556 * mm,
-            topMargin=72.55 * mm,
-            bottomMargin=86.79 * mm,
-        )
+        documento = self._propiedades_documento()
         flowables = []
         lista_detalle = [
             [

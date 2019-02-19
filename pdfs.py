@@ -31,7 +31,6 @@ def construye_comprobante(tree, archivo):
     ns_pago10 = '{http://www.sat.gob.mx/Pagos}'
     ns_tfd = '{http://www.sat.gob.mx/TimbreFiscalDigital}'
     element_pagos = None
-    conceptos = []
     for child in root:
         if child.tag == f'{ns_cfdi}Emisor':
             emisor = Emisor(
@@ -45,17 +44,6 @@ def construye_comprobante(tree, archivo):
                 child.attrib['Rfc'],
                 child.attrib['UsoCFDI'],
             )
-        elif child.tag == f'{ns_cfdi}Conceptos':
-            for grandchild in child:
-                concepto = Concepto(
-                    grandchild.attrib['Cantidad'],
-                    grandchild.attrib['ClaveProdServ'],
-                    grandchild.attrib['ClaveUnidad'],
-                    grandchild.attrib['Descripcion'],
-                    grandchild.attrib['Importe'],
-                    grandchild.attrib['ValorUnitario'],
-                )
-                conceptos.append(concepto)
         elif child.tag == f'{ns_cfdi}Complemento':
             for grandchild in child:
                 if grandchild.tag == f'{ns_pago10}Pagos':
@@ -120,7 +108,6 @@ def construye_comprobante(tree, archivo):
             root.attrib['Version'],
             emisor,
             receptor,
-            conceptos=conceptos,
             pagos=pagos,
             timbre=timbre,
         )
@@ -136,19 +123,29 @@ def compl_comp_f33(comprobante, archivo_f33):
     print(f'leyendo archivo {archivo_f33}')
     try:
         with open(archivo_f33, 'r') as f33:
+            conceptos = []
+            for linea in f33:
+                t_lin = linea.rstrip().split('|')
+                if t_lin[0] == 'CONCEPTO':
+                    concepto = Concepto(t_lin[1], t_lin[3], t_lin[11],
+                                        t_lin[2], t_lin[4], t_lin[6],
+                                        t_lin[5])
+                    conceptos.append(concepto)
+        with open(archivo_f33, 'r') as f33:
             lineas = {
                 x.rstrip().split('|')[0]:
                 x.rstrip().split('|')[1:] for x in f33
             }
-            comprobante.total_letra = lineas['DOCUMENTO'][15]
-            comprobante.cuenta_pago = lineas['DOCUMENTO'][13]
-            comprobante.receptor.clave = lineas['CLIENTE'][0]
-            comprobante.receptor.calle = lineas['CLIENTE'][2]
-            comprobante.receptor.colonia = lineas['CLIENTE'][3]
-            comprobante.receptor.municipio = lineas['CLIENTE'][10]
-            comprobante.receptor.estado = lineas['CLIENTE'][11]
-            comprobante.receptor.pais = lineas['CLIENTE'][12]
-            comprobante.receptor.codigo_postal = lineas['CLIENTE'][7]
+        comprobante.conceptos = conceptos
+        comprobante.total_letra = lineas['DOCUMENTO'][15]
+        comprobante.cuenta_pago = lineas['DOCUMENTO'][13]
+        comprobante.receptor.clave = lineas['CLIENTE'][0]
+        comprobante.receptor.calle = lineas['CLIENTE'][2]
+        comprobante.receptor.colonia = lineas['CLIENTE'][3]
+        comprobante.receptor.municipio = lineas['CLIENTE'][10]
+        comprobante.receptor.estado = lineas['CLIENTE'][11]
+        comprobante.receptor.pais = lineas['CLIENTE'][12]
+        comprobante.receptor.codigo_postal = lineas['CLIENTE'][7]
     except FileNotFoundError as ffe:
         print(f'{ffe} | Buscando en Errores!')
         archivo_error = archivo_f33.replace('Procesado', 'Errores')
