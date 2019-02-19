@@ -122,14 +122,6 @@ class ImpresionComprobante:
         emisor = self._comprobante.emisor
         receptor = self._comprobante.receptor
         rojo, verde, azul = self._codigo_color_lineas[1:-1].split(',')
-        cabecera = Frame(
-            7.0556 * mm,
-            207.38 * mm,
-            width=201.88 * mm,
-            height=64.56 * mm,
-            id='Cabecera',
-            leftPadding=43.6956 * mm
-        )
         frame_pie_datos = Frame(
             7.0556 * mm,
             69.02 * mm,
@@ -160,7 +152,6 @@ class ImpresionComprobante:
             topPadding=0,
             bottomPadding=0,
         )
-        flowables_cabecera = []
         flowables_pie_datos = []
         flowables_pie_totales = []
         flowables_pie_info = []
@@ -284,7 +275,6 @@ class ImpresionComprobante:
         para_emisor = Paragraph(datos_emisor, styles['Normal'])
         para_emisor.wrapOn(canvas, 106 * mm, 31 * mm)
         para_emisor.drawOn(canvas, 49.55 * mm, 247 * mm)
-        flowables_cabecera.append(Spacer(0, 36 * mm))
         titulos = Table(
             titulos_receptor,
             colWidths=[
@@ -305,7 +295,6 @@ class ImpresionComprobante:
         para_receptor = Paragraph(datos_receptor, small)
         para_receptor.wrapOn(canvas, 155.22 * mm, 26.28 * mm)
         para_receptor.drawOn(canvas, 7.5 * mm, 212.58 * mm)
-        cabecera.addFromList(flowables_cabecera, canvas)
 
         # Pie
         tabla_pie = Table(
@@ -377,8 +366,8 @@ class ImpresionComprobante:
 
         canvas.restoreState()
 
-    def _define_layout(self):
-        documento = SimpleDocTemplate(
+    def _propiedades_documento(self):
+        doc = SimpleDocTemplate(
             self.nombre,
             pagesize=letter,
             rightMargin=7.0556 * mm,
@@ -386,6 +375,10 @@ class ImpresionComprobante:
             topMargin=72.55 * mm,
             bottomMargin=86.79 * mm,
         )
+        return doc
+
+    def _define_layout(self):
+        documento = self._propiedades_documento()
         styles = getSampleStyleSheet()
         flowables = []
         lista_detalle = [
