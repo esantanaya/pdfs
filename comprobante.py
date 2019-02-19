@@ -22,6 +22,7 @@ class Comprobante:
         timbre=None,
         total_letra=None,
         cuenta_pago=None,
+        vehiculo=None,
     ):
         self._nombre_archivo = nombre_archivo
         self._no_certificado = no_certificado
@@ -44,6 +45,7 @@ class Comprobante:
         self._timbre = timbre
         self._total_letra = total_letra
         self._cuenta_pago = cuenta_pago
+        self._vehiculo = vehiculo
 
     @property
     def nombre_archivo(self):
@@ -212,6 +214,126 @@ class Comprobante:
     @cuenta_pago.setter
     def cuenta_pago(self, cuenta_pago):
         self._cuenta_pago = cuenta_pago
+
+    @property
+    def vehiculo(self):
+        return self._vehiculo
+
+    @vehiculo.setter
+    def vehiculo(self, vehiculo):
+        self._vehiculo = vehiculo
+
+
+class Vehiculo:
+    def __init__(self):
+        self._marca = ''
+        self._modelo = ''
+        self._anio = ''
+        self._color = ''
+        self._serie = ''
+        self._kilometraje = ''
+        self._placas = ''
+        self._motor = ''
+        self._bonete = ''
+        self._referencia = ''
+        self._recepcionista = ''
+        self._siniestro = ''
+
+    @property
+    def marca(self):
+        return self._marca
+
+    @marca.setter
+    def marca(self, marca):
+        self._marca = marca
+
+    @property
+    def modelo(self):
+        return self._modelo
+
+    @modelo.setter
+    def modelo(self, modelo):
+        self._modelo = modelo
+
+    @property
+    def anio(self):
+        return self._anio
+
+    @anio.setter
+    def anio(self, anio):
+        self._anio = anio
+
+    @property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, color):
+        self._color = color
+
+    @property
+    def serie(self):
+        return self._serie
+
+    @serie.setter
+    def serie(self, serie):
+        self._serie = serie
+
+    @property
+    def kilometraje(self):
+        return self._kilometraje
+
+    @kilometraje.setter
+    def kilometraje(self, kilometraje):
+        self._kilometraje = kilometraje
+
+    @property
+    def placas(self):
+        return self._placas
+
+    @placas.setter
+    def placas(self, placas):
+        self._placas = placas
+
+    @property
+    def motor(self):
+        return self._motor
+
+    @motor.setter
+    def motor(self, motor):
+        self._motor = motor
+
+    @property
+    def bonete(self):
+        return self._bonete
+
+    @bonete.setter
+    def bonete(self, bonete):
+        self._bonete = bonete
+
+    @property
+    def referencia(self):
+        return self._referencia
+
+    @referencia.setter
+    def referencia(self, referencia):
+        self._referencia = referencia
+
+    @property
+    def recepcionista(self):
+        return self._recepcionista
+
+    @recepcionista.setter
+    def recepcionista(self, recepcionista):
+        self._recepcionista = recepcionista
+
+    @property
+    def siniestro(self):
+        return self._siniestro
+
+    @siniestro.setter
+    def siniestro(self, siniestro):
+        self._siniestro = siniestro
 
 
 class Emisor:
