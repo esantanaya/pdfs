@@ -4,9 +4,9 @@ import traceback
 
 from lxml import etree as ET
 
-from layout import ImpresionComprobante, ImpresionPago
+from layout import ImpresionComprobante, ImpresionPago, ImpresionServicio
 from comprobante import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
-                         Receptor, TimbreFiscalDigital)
+                         Receptor, TimbreFiscalDigital, Vehiculo)
 
 
 def ordena_archivos(agencia, mes_anio, directorio, tipo):
@@ -122,6 +122,7 @@ def construye_comprobante(tree, archivo):
 def compl_comp_f33(comprobante, archivo_f33):
     print(f'leyendo archivo {archivo_f33}')
     try:
+        vehiculo = Vehiculo()
         with open(archivo_f33, 'r') as f33:
             conceptos = []
             for linea in f33:
@@ -146,6 +147,23 @@ def compl_comp_f33(comprobante, archivo_f33):
         comprobante.receptor.estado = lineas['CLIENTE'][11]
         comprobante.receptor.pais = lineas['CLIENTE'][12]
         comprobante.receptor.codigo_postal = lineas['CLIENTE'][7]
+        vehiculo.marca = lineas['VEHICULO'][1]
+        vehiculo.modelo = lineas['VEHICULO'][2]
+        vehiculo.anio = lineas['VEHICULO'][3]
+        vehiculo.color = lineas['VEHICULO'][4]
+        vehiculo.serie = lineas['VEHICULO'][0]
+        vehiculo.kilometraje = lineas['VEHICULO'][8]
+        vehiculo.placas = lineas['VEHICULO'][9]
+        vehiculo.motor = lineas['VEHICULO'][5]
+        vehiculo.bonete = lineas['EXTRAS'][7]
+        vehiculo.referencia = (f'{lineas["VEHICULO"][6]}-'
+                               f'{lineas["VEHICULO"][7]}')
+        vehiculo.recepcionista = lineas['VEHICULO'][10]
+        vehiculo.siniestro = lineas['EXTRAS'][6]
+        comprobante.vehiculo = vehiculo
+    except IndexError:
+        vehiculo.siniestro = 'NA'
+        vehiculo.bonete = 'NA'
     except FileNotFoundError as ffe:
         print(f'{ffe} | Buscando en Errores!')
         archivo_error = archivo_f33.replace('Procesado', 'Errores')
@@ -207,7 +225,8 @@ def main_pagos():
     tipos = {
         'Pagos': 'UA29',
         'Notas': 'UD03',
-        'Credito': 'UA03'
+        'Credito': 'UA03',
+        'Servicio': 'UD10',
     }
     num = int(input(f'Selecciona una agencia de la lista {agencias}\n'))
     agencia = agencias[num]
@@ -224,10 +243,12 @@ def main_pagos():
     for archivo_valido in ordena_archivos(agencia, mes_anio, ruta, tipo):
         try:
             comp = leer_archivo(archivo_valido, mes_anio, ruta, agencia)
-            if tipo != 'UA29':
-                imp = ImpresionComprobante(comp)
-            else:
+            if tipo == 'UD10':
+                imp = ImpresionServicio(comp)
+            elif tipo == 'UA29':
                 imp = ImpresionPago(comp)
+            else:
+                imp = ImpresionComprobante(comp)
             imp.genera_pdf()
         except KeyError as ke:
             traceback.print_exc()

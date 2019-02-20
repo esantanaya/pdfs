@@ -151,6 +151,13 @@ class ImpresionComprobante:
             ('SIZE', (0, 0), (-1, -1), 8),
             ('LEADING', (0, 0), (-1, -1), 5.7),
         ])
+        self._estilo_seg_cab = TableStyle([
+            ('LEADING', (0, 0), (-1, -1), 8),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 2), (-1, 2), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 4), (-1, 4), 'Helvetica-Bold'),
+        ])
 
     def _set_marcos(self, canvas):
         rojo, verde, azul = self._codigo_color_lineas[1:-1].split(',')
@@ -548,12 +555,31 @@ class ImpresionServicio(ImpresionComprobante):
         )
         return doc
 
-    def _segunda_cabecera(self):
-        [
+    def _segunda_cabecera(self, canvas):
+        veh = self._comprobante.vehiculo
+        info_seg_cab = [
             ['Marca', 'Tipo Modelo', 'Año', 'Color', 'Número de serie'],
+            [veh.marca, veh.modelo, veh.anio, veh.color, veh.serie],
             ['Kilometraje', 'Placas', 'Motor', 'Bonete', 'Referencia'],
-            ['Recepcionista', '', '', '', 'Siniestro'],
+            [veh.kilometraje, veh.placas, veh.motor,
+             veh.bonete, veh.referencia],
+            ['Recepcionista', '', '', '', 'Siniestro/O. Compra'],
+            [veh.recepcionista, '', '', '', veh.siniestro],
         ]
+        tabla_segunda = Table(
+            info_seg_cab,
+            colWidths=[
+                40.358 * mm,
+                40.358 * mm,
+                40.358 * mm,
+                40.358 * mm,
+                40.358 * mm,
+            ]
+        )
+        tabla_segunda.setStyle(self._estilo_seg_cab)
+        tabla_segunda.wrapOn(canvas, 0, 0)
+        tabla_segunda.drawOn(canvas, 7 * mm, 175 * mm)
+        return canvas
 
     def _primera_hoja(self, canvas, document):
         canvas = self._propiedades_canvas(canvas)
@@ -565,6 +591,7 @@ class ImpresionServicio(ImpresionComprobante):
         canvas.saveState()
         canvas = self._set_marcos(canvas)
         canvas = self._config_cabecera(canvas)
+        canvas = self._segunda_cabecera(canvas)
 
         # Pie
         self._frame_pie_datos.addFromList(self._flowables_pie_datos, canvas)
