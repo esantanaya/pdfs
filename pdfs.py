@@ -119,12 +119,13 @@ def construye_comprobante(tree, archivo):
     return comprobante
 
 
-def compl_comp_f33(comprobante, archivo_f33):
-    print(f'leyendo archivo {archivo_f33}')
+def cons_f33(comprobante, archivo_f33, mensaje=None):
+    vehiculo = Vehiculo()
+    conceptos = []
     try:
-        vehiculo = Vehiculo()
         with open(archivo_f33, 'r') as f33:
-            conceptos = []
+            if mensaje:
+                print('Encontramos el F33 en errores!')
             for linea in f33:
                 t_lin = linea.rstrip().split('|')
                 if t_lin[0] == 'CONCEPTO':
@@ -155,40 +156,36 @@ def compl_comp_f33(comprobante, archivo_f33):
         vehiculo.kilometraje = lineas['VEHICULO'][8]
         vehiculo.placas = lineas['VEHICULO'][9]
         vehiculo.motor = lineas['VEHICULO'][5]
-        vehiculo.bonete = lineas['EXTRAS'][7]
         vehiculo.referencia = (f'{lineas["VEHICULO"][6]}-'
                                f'{lineas["VEHICULO"][7]}')
         vehiculo.recepcionista = lineas['VEHICULO'][10]
         vehiculo.siniestro = lineas['EXTRAS'][6]
-        comprobante.vehiculo = vehiculo
+        vehiculo.bonete = lineas['EXTRAS'][7]
     except IndexError:
         vehiculo.siniestro = 'NA'
         vehiculo.bonete = 'NA'
+    except FileNotFoundError:
+        raise FileNotFoundError
+    finally:
+        comprobante.vehiculo = vehiculo
+    return comprobante
+
+
+def compl_comp_f33(comprobante, archivo_f33):
+    print(f'leyendo archivo {archivo_f33}')
+    try:
+        comprobante = cons_f33(comprobante, archivo_f33)
     except FileNotFoundError as ffe:
         print(f'{ffe} | Buscando en Errores!')
         archivo_error = archivo_f33.replace('Procesado', 'Errores')
         try:
-            with open(archivo_error, 'r') as f33:
-                print(f'Encontramos el F33 en errores!')
-                lineas = {
-                    x.rstrip().split('|')[0]:
-                    x.rstrip().split('|')[1:] for x in f33
-                }
-                comprobante.total_letra = lineas['DOCUMENTO'][15]
-                comprobante.cuenta_pago = lineas['DOCUMENTO'][13]
-                comprobante.receptor.clave = lineas['CLIENTE'][0]
-                comprobante.receptor.calle = lineas['CLIENTE'][2]
-                comprobante.receptor.colonia = lineas['CLIENTE'][3]
-                comprobante.receptor.municipio = lineas['CLIENTE'][10]
-                comprobante.receptor.estado = lineas['CLIENTE'][11]
-                comprobante.receptor.pais = lineas['CLIENTE'][12]
-                comprobante.receptor.codigo_postal = lineas['CLIENTE'][7]
-        except Exception as e:
+            comprobante = cons_f33(comprobante, archivo_error, 1)
+        except FileNotFoundError as e:
             print(f'{e} | tampoco lo encontramos en errores!')
             with open('errores.log', '+a') as log:
                 log.write('\n'+str(e))
-
-    return comprobante
+    finally:
+        return comprobante
 
 
 def leer_archivo(archivo, mes_anio, ruta, agencia):

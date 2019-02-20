@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['pdfs.py'],
-             pathex=['c:\\Users\\esant\\OneDrive\\Documents\\Trabajo\\Proyectos\\CFDI 3.3\\pdfs'],
+             pathex=['C:\\Users\\esant\\OneDrive\\Documents\\Trabajo\\Proyectos\\CFDI 3.3\\pdfs'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -19,14 +19,18 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,
           [],
+          exclude_binaries=True,
           name='pdfs',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          runtime_tmpdir=None,
           console=True )
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=False,
+               upx=True,
+               name='pdfs')
