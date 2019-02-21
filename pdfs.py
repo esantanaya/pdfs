@@ -12,7 +12,6 @@ from comprobante import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
 def ordena_archivos(agencia, mes_anio, directorio, tipo):
     print(f'Ordenando archivos...')
 
-    # Para recibos
     patron = r'\d{2}\-' + tipo + r'\w{3}\-\w{7}\.xml'
     ruta_archivos = (os.sep.join(directorio) + os.sep + agencia + os.sep +
                      mes_anio)

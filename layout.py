@@ -118,7 +118,6 @@ class ImpresionComprobante:
         canvas.setSubject(self._pdf_titulo)
         canvas.setCreator(self._creador)
         return canvas
-
     def _set_tamanos(self):
         self._small = ParagraphStyle('Pequeña')
         self._small.fontSize = 7
@@ -144,7 +143,7 @@ class ImpresionComprobante:
             ('SPAN', (0, 0), (3, 0)),
         ])
         self._estilo_tabla_totales = TableStyle([
-            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+            ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
             ('LEADING', (0, 0), (-1, -1), 5.7),
         ])
         self._estilo_tabla_info_qr = TableStyle([
