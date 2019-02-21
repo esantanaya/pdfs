@@ -209,7 +209,7 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
     return comprobante
 
 
-def main_pagos():
+def main():
     agencias = {
         1: 'ACE050912GZ0',
         2: 'APA040128N75',
@@ -261,4 +261,4 @@ def main_pagos():
 
 
 if __name__ == '__main__':
-    main_pagos()
+    main()
