@@ -68,27 +68,26 @@ def construye_comprobante(tree, archivo):
     pagos = []
     if element_pagos is not None:
         for element_pago in element_pagos:
-            element_docto = element_pago.find(
-                f'{ns_pago10}DoctoRelacionado')
-            docto = DoctoRelacionado(
-                element_docto.attrib['Folio'],
-                element_docto.attrib['IdDocumento'],
-                element_docto.attrib['ImpPagado'],
-                element_docto.attrib['ImpSaldoAnt'],
-                element_docto.attrib['ImpSaldoInsoluto'],
-                element_docto.attrib['MetodoDePagoDR'],
-                element_docto.attrib['MonedaDR'],
-                element_docto.attrib['NumParcialidad'],
-                element_docto.attrib['Serie'],
-            )
-            pago = Pago(
-                element_pago.attrib['FechaPago'],
-                element_pago.attrib['FormaDePagoP'],
-                element_pago.attrib['MonedaP'],
-                element_pago.attrib['Monto'],
-                docto,
-            )
-            pagos.append(pago)
+            for element_docto in element_pago:
+                docto = DoctoRelacionado(
+                    element_docto.attrib['Folio'],
+                    element_docto.attrib['IdDocumento'],
+                    element_docto.attrib['ImpPagado'],
+                    element_docto.attrib['ImpSaldoAnt'],
+                    element_docto.attrib['ImpSaldoInsoluto'],
+                    element_docto.attrib['MetodoDePagoDR'],
+                    element_docto.attrib['MonedaDR'],
+                    element_docto.attrib['NumParcialidad'],
+                    element_docto.attrib['Serie'],
+                )
+                pago = Pago(
+                    element_pago.attrib['FechaPago'],
+                    element_pago.attrib['FormaDePagoP'],
+                    element_pago.attrib['MonedaP'],
+                    element_pago.attrib['Monto'],
+                    docto,
+                )
+                pagos.append(pago)
 
     if root.tag == f'{ns_cfdi}Comprobante':
         print(f'Creando comprobante')
