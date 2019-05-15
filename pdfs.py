@@ -1,6 +1,7 @@
 import os
 import re
 import traceback
+import logging
 
 from lxml import etree as ET
 
@@ -9,8 +10,15 @@ from comprobante import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
                          Receptor, TimbreFiscalDigital, Vehiculo)
 
 
+logging.basicConfig(filename=os.path.join('errores.log'),
+                    format='%(asctime)s - %(message)s',
+                    datefmt='%d/%m/%Y %H:%M:%S',
+                    level=logging.INFO)
+
+
 def ordena_archivos(agencia, mes_anio, directorio, tipo):
     print(f'Ordenando archivos...')
+    logging.info(f'Inicio')
 
     patron = r'\d{2}\-' + tipo + r'\w{3}\-\w{7}\.xml'
     ruta_archivos = (os.sep.join(directorio) + os.sep + agencia + os.sep +
@@ -21,6 +29,7 @@ def ordena_archivos(agencia, mes_anio, directorio, tipo):
         return archivos_validos
     except Exception as e:
         print(e)
+        logging.error(e)
 
 
 def construye_comprobante(tree, archivo):
@@ -175,13 +184,13 @@ def compl_comp_f33(comprobante, archivo_f33):
         comprobante = cons_f33(comprobante, archivo_f33)
     except FileNotFoundError as ffe:
         print(f'{ffe} | Buscando en Errores!')
+        logging.error(f'No encontramos {archivo_f33}, se buscara en errores')
         archivo_error = archivo_f33.replace('Procesado', 'Errores')
         try:
             comprobante = cons_f33(comprobante, archivo_error, 1)
         except FileNotFoundError as e:
             print(f'{e} | tampoco lo encontramos en errores!')
-            with open('errores.log', '+a') as log:
-                log.write('\n'+str(e))
+            logging.error(e)
     finally:
         return comprobante
 
@@ -221,6 +230,7 @@ def main():
         'Pagos': 'UA29',
         'Notas': 'UD03',
         'Credito': 'UA03',
+        'Credito Auto': 'UA60',
         'Servicio': 'UD10',
     }
     num = int(input(f'Selecciona una agencia de la lista {agencias}\n'))
@@ -246,7 +256,7 @@ def main():
                 imp = ImpresionComprobante(comp)
             imp.genera_pdf()
         except KeyError as ke:
-            traceback.print_exc()
+            logging.error(traceback.print_exc())
             with open('errores.log', '+a', encoding='UTF-8') as log:
                 log.write(f'\n [Error] en {agencia}-{archivo_valido} no se '
                           f'encontró {str(ke)}')
@@ -254,10 +264,10 @@ def main():
         except Exception as e:
             print(e)
             traceback.print_exc()
-            with open('errores.log', '+a') as log:
-                log.write('\n'+str(e))
+            logging.error(f'{agencia}-{archivo_valido} : {e}', exc_info=True)
             continue
 
 
 if __name__ == '__main__':
     main()
+    logging.info(f'Fin')

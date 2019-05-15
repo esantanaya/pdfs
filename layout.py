@@ -10,6 +10,7 @@ from reportlab.lib.colors import red
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
+from custom_canvas import PageNumCanvas
 from reportlab.platypus import (Frame, Paragraph, SimpleDocTemplate, Spacer,
                                 Table, TableStyle)
 
@@ -118,6 +119,7 @@ class ImpresionComprobante:
         canvas.setSubject(self._pdf_titulo)
         canvas.setCreator(self._creador)
         return canvas
+
     def _set_tamanos(self):
         self._small = ParagraphStyle('Pequeña')
         self._small.fontSize = 7
@@ -454,7 +456,8 @@ class ImpresionComprobante:
             flowables.append(x)
 
         documento.build(flowables, onFirstPage=self._primera_hoja,
-                        onLaterPages=self._primera_hoja)
+                        onLaterPages=self._primera_hoja, 
+                        canvasmaker=PageNumCanvas)
 
     def resuelve_codigos(self):
         try:
@@ -660,7 +663,8 @@ class ImpresionServicio(ImpresionComprobante):
             flowables.append(x)
 
         documento.build(flowables, onFirstPage=self._primera_hoja,
-                        onLaterPages=self._primera_hoja)
+                        onLaterPages=self._primera_hoja, 
+                        canvasmaker=PageNumCanvas)
 
 
 class ImpresionVehiculos(ImpresionServicio):
@@ -776,4 +780,5 @@ class ImpresionPago(ImpresionComprobante):
             flowables.append(x)
 
         documento.build(flowables, onFirstPage=self._primera_hoja,
-                        onLaterPages=self._primera_hoja)
+                        onLaterPages=self._primera_hoja,
+                        canvasmaker=PageNumCanvas)
