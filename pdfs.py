@@ -39,6 +39,7 @@ def construye_comprobante(tree, archivo):
     ns_pago10 = '{http://www.sat.gob.mx/Pagos}'
     ns_tfd = '{http://www.sat.gob.mx/TimbreFiscalDigital}'
     element_pagos = None
+    conceptos = []
     for child in root:
         if child.tag == f'{ns_cfdi}Emisor':
             emisor = Emisor(
@@ -52,6 +53,19 @@ def construye_comprobante(tree, archivo):
                 child.attrib['Rfc'],
                 child.attrib['UsoCFDI'],
             )
+        elif child.tag == f'{ns_cfdi}Conceptos':
+            for grandchild in child:
+                if grandchild.tag == f'{ns_cfdi}Concepto':
+                    concepto = Concepto(
+                        grandchild.attrib['Cantidad'],
+                        grandchild.attrib['ClaveProdServ'],
+                        grandchild.attrib.get('NoIdentificacion'),
+                        grandchild.attrib['ClaveUnidad'],
+                        grandchild.attrib['Descripcion'],
+                        grandchild.attrib['Importe'],
+                        grandchild.attrib['ValorUnitario'],
+                    )
+                    conceptos.append(concepto)
         elif child.tag == f'{ns_cfdi}Complemento':
             for grandchild in child:
                 if grandchild.tag == f'{ns_pago10}Pagos':
@@ -117,6 +131,7 @@ def construye_comprobante(tree, archivo):
             receptor,
             pagos=pagos,
             timbre=timbre,
+            conceptos=conceptos,
         )
 
         if comprobante.tipo_comprobante != 'P':
@@ -145,7 +160,6 @@ def cons_f33(comprobante, archivo_f33, mensaje=None):
                 x.rstrip().split('|')[0]:
                 x.rstrip().split('|')[1:] for x in f33
             }
-        comprobante.conceptos = conceptos
         comprobante.total_letra = lineas['DOCUMENTO'][15]
         comprobante.cuenta_pago = lineas['DOCUMENTO'][13]
         comprobante.receptor.clave = lineas['CLIENTE'][0]
@@ -173,6 +187,8 @@ def cons_f33(comprobante, archivo_f33, mensaje=None):
         vehiculo.bonete = 'NA'
     except FileNotFoundError:
         raise FileNotFoundError
+    else:
+        comprobante.conceptos = conceptos
     finally:
         comprobante.vehiculo = vehiculo
     return comprobante
