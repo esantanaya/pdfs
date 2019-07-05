@@ -246,7 +246,7 @@ def main():
         'Pagos': 'UA29',
         'Notas': 'UD03',
         'Credito': 'UA03',
-        'Credito Auto': 'UA60',
+        'Credito Auto': 'UA52',
         'Servicio': 'UD10',
     }
     num = int(input(f'Selecciona una agencia de la lista {agencias}\n'))
