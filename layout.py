@@ -143,8 +143,10 @@ class ImpresionComprobante:
         ])
         self._estilo_tabla_info = TableStyle([
             ('SIZE', (0, 0), (-1, -1), 8),
+            ('SIZE', (-1, -1), (-1, -1), 5.5),
             ('LEADING', (0, 0), (-1, -1), 5.7),
             ('SPAN', (0, 0), (3, 0)),
+            ('TOPPADDING', (-1, -1), (-1, -1), 4.1),
         ])
         self._estilo_tabla_totales = TableStyle([
             ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
