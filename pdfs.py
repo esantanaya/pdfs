@@ -34,7 +34,6 @@ def ordena_archivos(agencia, mes_anio, directorio, tipo):
 
 def construye_comprobante(tree, archivo):
     root = tree.getroot()
-
     ns_cfdi = '{http://www.sat.gob.mx/cfd/3}'
     ns_pago10 = '{http://www.sat.gob.mx/Pagos}'
     ns_tfd = '{http://www.sat.gob.mx/TimbreFiscalDigital}'
