@@ -8,11 +8,11 @@ pillow = "*"
 lxml = "*"
 reportlab = "*"
 pyinstaller = "*"
+pysmb = "*"
 
 [dev-packages]
 flake8 = "*"
 pytest = "*"
-reportes = {editable = true,path = "."}
 pylint = "*"
 
 [requires]

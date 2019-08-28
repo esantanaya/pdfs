@@ -4,7 +4,7 @@ class Comprobante:
                  tipo_comprobante, total, version, emisor, receptor,
                  forma_pago=None, metodo_pago=None, conceptos=None,
                  pagos=None, timbre=None, total_letra=None, cuenta_pago=None,
-                 vehiculo=None):
+                 vehiculo=None, cfdi_relacionado=None):
         self.nombre_archivo = nombre_archivo
         self.no_certificado = no_certificado
         self.fecha = fecha
@@ -27,6 +27,7 @@ class Comprobante:
         self.total_letra = total_letra
         self.cuenta_pago = cuenta_pago
         self.vehiculo = vehiculo
+        self.cfdi_relacionado = cfdi_relacionado
 
     @property
     def nombre_archivo(self):
@@ -203,6 +204,36 @@ class Comprobante:
     @vehiculo.setter
     def vehiculo(self, vehiculo):
         self._vehiculo = vehiculo
+
+    @property
+    def cfdi_relacionado(self):
+        return self._cfdi_relacionado
+
+    @cfdi_relacionado.setter
+    def cfdi_relacionado(self, cfdi_relacionado):
+        self._cfdi_relacionado = cfdi_relacionado
+
+
+class CfdiRelacionado:
+    def __init__(self, tipo_relacion, uuids):
+        self._tipo_relacion = tipo_relacion
+        self._uuids = uuids
+
+    @property
+    def tipo_relacion(self):
+        return self._tipo_relacion
+
+    @tipo_relacion.setter
+    def tipo_relacion(self, tipo_relacion):
+        self._tipo_relacion = tipo_relacion
+
+    @property
+    def uuids(self):
+        return self._uuids
+
+    @uuids.setter
+    def uuids(self, uuids):
+        self._uuids = uuids
 
 
 class Vehiculo:

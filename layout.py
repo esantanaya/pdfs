@@ -43,6 +43,8 @@ class ImpresionComprobante:
             [
                 'Método de pago:',
                 self._comprobante.metodo_pago,
+                'CFDI Relacionado:',
+                self._comprobante.cfdi_relacionado,
             ],
         ]
         subtotal = float(self._comprobante.subtotal)
