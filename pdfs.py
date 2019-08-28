@@ -42,7 +42,7 @@ def construye_comprobante(tree, archivo):
     conceptos = []
     for child in root:
         if child.tag == f'{ns_cfdi}CfdiRelacionados':
-            rel = child.find('{ns_cfdi}CfdiRelacionado')
+            rel = child.find(f'{ns_cfdi}CfdiRelacionado')
             if rel:
                 uuid_rel = rel.attrib.get('UUID')
         if child.tag == f'{ns_cfdi}Emisor':
