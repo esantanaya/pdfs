@@ -38,8 +38,13 @@ def construye_comprobante(tree, archivo):
     ns_pago10 = '{http://www.sat.gob.mx/Pagos}'
     ns_tfd = '{http://www.sat.gob.mx/TimbreFiscalDigital}'
     element_pagos = None
+    uuid_rel = None
     conceptos = []
     for child in root:
+        if child.tag == f'{ns_cfdi}CfdiRelacionados':
+            rel = chid.find('{ns_cfdi}CfdiRelacionado')
+            if rel:
+                uuid_rel = rel.attrib.get('UUID')
         if child.tag == f'{ns_cfdi}Emisor':
             emisor = Emisor(
                 child.attrib['Nombre'],
@@ -131,6 +136,7 @@ def construye_comprobante(tree, archivo):
             pagos=pagos,
             timbre=timbre,
             conceptos=conceptos,
+            cfdi_relacionado=uuid_rel
         )
 
         if comprobante.tipo_comprobante != 'P':
