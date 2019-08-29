@@ -7,7 +7,8 @@ from lxml import etree as ET
 
 from layout import ImpresionComprobante, ImpresionPago, ImpresionServicio
 from comprobante import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
-                         Receptor, TimbreFiscalDigital, Vehiculo)
+                         Receptor, TimbreFiscalDigital, Vehiculo,
+                         CfdiRelacionado)
 
 
 logging.basicConfig(filename=os.path.join('errores.log'),
@@ -44,7 +45,10 @@ def construye_comprobante(tree, archivo):
         if child.tag == f'{ns_cfdi}CfdiRelacionados':
             rel = child.find(f'{ns_cfdi}CfdiRelacionado')
             if rel is not None:
-                uuid_rel = rel.attrib.get('UUID')
+                uuid_rel = CfdiRelacionado(
+                    child.attrib.get('TipoRelacion'),
+                    rel.attrib.get('UUID'),
+                )
         if child.tag == f'{ns_cfdi}Emisor':
             emisor = Emisor(
                 child.attrib['Nombre'],
@@ -296,6 +300,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
-    #uno('02-UD10022-BS03082.xml', '082019', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'ACA080131IL5')
+    #main()
+    uno('02-UD10022-BS03082.xml', '082019', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'ACA080131IL5')
     logging.info(f'Fin')

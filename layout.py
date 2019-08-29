@@ -31,8 +31,8 @@ class ImpresionComprobante:
             [
                 'Forma de pago:',
                 self._comprobante.forma_pago,
-                'Número de Cuenta:',
-                self._comprobante.cuenta_pago,
+                'Método de pago:',
+                self._comprobante.metodo_pago,
             ],
             [
                 'Uso de CFDI:',
@@ -41,10 +41,10 @@ class ImpresionComprobante:
                 self._comprobante.tipo_comprobante,
             ],
             [
-                'Método de pago:',
-                self._comprobante.metodo_pago,
+                'Tipo de relación:',
+                self._comprobante.cfdi_relacionado.tipo_relacion,
                 'CFDI Relacionado:',
-                self._comprobante.cfdi_relacionado,
+                self._comprobante.cfdi_relacionado.uuids,
             ],
         ]
         subtotal = float(self._comprobante.subtotal)
