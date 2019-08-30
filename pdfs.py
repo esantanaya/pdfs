@@ -300,6 +300,6 @@ def main():
 
 
 if __name__ == '__main__':
-    #main()
-    uno('02-UD10022-BS03082.xml', '082019', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'ACA080131IL5')
+    main()
+    #uno('02-UD10022-BS03082.xml', '082019', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'ACA080131IL5')
     logging.info(f'Fin')
