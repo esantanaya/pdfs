@@ -708,7 +708,12 @@ class ImpresionPago(ImpresionComprobante):
                 'Clave de Producto:',
                 self._comprobante.conceptos[0].clave_prod_serv
             ],
-            ['Número de cuenta:', self._comprobante.cuenta_pago, '', ''],
+            [
+                'Tipo de relación:',
+                self._comprobante.cfdi_relacionado.tipo_relacion,
+                'CFDI Relacionado:',
+                self._comprobante.cfdi_relacionado.uuids,
+            ],
         ]
         monto = float(self._comprobante.pagos[0].monto)
         self._info_totales = [
