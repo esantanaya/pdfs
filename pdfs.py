@@ -260,6 +260,7 @@ def main():
     tipos = {
         'Pagos': 'UA29',
         'Notas': 'UD03',
+        'Notas Hino': 'UA14',
         'Credito': 'UA03',
         'Credito Auto': 'UA52',
         'Servicio': 'UD10',
@@ -300,6 +301,6 @@ def main():
 
 
 if __name__ == '__main__':
-    #main()
-    uno('02-UD10022-BS03082.xml', '082019', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'ACA080131IL5')
+    main()
+    #uno('02-UD10001-FS09138.xml', '092019', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'QMO710112RH2')
     logging.info(f'Fin')

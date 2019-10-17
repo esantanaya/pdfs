@@ -40,13 +40,16 @@ class ImpresionComprobante:
                 'Tipo de Comprobante:',
                 self._comprobante.tipo_comprobante,
             ],
-            [
-                'Tipo de relación:',
-                self._comprobante.cfdi_relacionado.tipo_relacion,
-                'CFDI Relacionado:',
-                self._comprobante.cfdi_relacionado.uuids,
-            ],
         ]
+        if self._comprobante.cfdi_relacionado:
+            self._info_extra.append(
+                [
+                    'Tipo de relación:',
+                    self._comprobante.cfdi_relacionado.tipo_relacion,
+                    'CFDI Relacionado:',
+                    self._comprobante.cfdi_relacionado.uuids,
+                ],
+            )
         subtotal = float(self._comprobante.subtotal)
         total = float(self._comprobante.total)
         impuestos = total - subtotal
@@ -142,6 +145,11 @@ class ImpresionComprobante:
             ('TOPPADDING', (0, 7), (0, 7), 8),
         ])
         self._estilo_tabla_info = TableStyle([
+            ('SIZE', (0, 0), (-1, -1), 8),
+            ('LEADING', (0, 0), (-1, -1), 5.7),
+            ('SPAN', (0, 0), (3, 0)),
+        ])
+        self._estilo_tabla_info_rels = TableStyle([
             ('SIZE', (0, 0), (-1, -1), 8),
             ('SIZE', (-1, -1), (-1, -1), 5.5),
             ('LEADING', (0, 0), (-1, -1), 5.7),
@@ -241,6 +249,8 @@ class ImpresionComprobante:
             ]
         )
         tabla_pie.setStyle(self._estilo_tabla_info)
+        if self._comprobante.cfdi_relacionado:
+            tabla_pie.setStyle(self._estilo_tabla_info_rels)
         tabla_pie.vAlign = 'TOP'
         tabla_pie.hAlign = 'LEFT'
         self._flowables_pie_datos.append(tabla_pie)
