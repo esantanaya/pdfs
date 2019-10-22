@@ -708,13 +708,14 @@ class ImpresionPago(ImpresionComprobante):
                 'Clave de Producto:',
                 self._comprobante.conceptos[0].clave_prod_serv
             ],
-            [
+        ]
+        if self._comprobante.cfdi_relacionado:
+            self._info_extra.append([
                 'Tipo de relación:',
                 self._comprobante.cfdi_relacionado.tipo_relacion,
                 'CFDI Relacionado:',
                 self._comprobante.cfdi_relacionado.uuids,
-            ],
-        ]
+            ])
         monto = float(self._comprobante.pagos[0].monto)
         self._info_totales = [
             ['Total:', f'${monto:,.2f}'],
