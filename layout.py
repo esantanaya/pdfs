@@ -716,6 +716,13 @@ class ImpresionPago(ImpresionComprobante):
                 'CFDI Relacionado:',
                 self._comprobante.cfdi_relacionado.uuids,
             ])
+        if self._comprobante.pagos:
+            self._info_extra.append([
+                'Fecha de Pago:',
+                self._comprobante.pagos[0].fecha_pago,
+                '',
+                '',
+            ])
         monto = float(self._comprobante.pagos[0].monto)
         self._info_totales = [
             ['Total:', f'${monto:,.2f}'],
