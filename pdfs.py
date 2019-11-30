@@ -8,7 +8,7 @@ from lxml import etree as ET
 from layout import ImpresionComprobante, ImpresionPago, ImpresionServicio
 from comprobante import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
                          Receptor, TimbreFiscalDigital, Vehiculo,
-                         CfdiRelacionado)
+                         VehiculoNuevo, CfdiRelacionado)
 
 
 logging.basicConfig(filename=os.path.join('errores.log'),
@@ -152,6 +152,7 @@ def construye_comprobante(tree, archivo):
 
 def cons_f33(comprobante, archivo_f33, mensaje=None):
     vehiculo = Vehiculo()
+    nuevo = VehiculoNuevo()
     conceptos = []
     try:
         with open(archivo_f33, 'r') as f33:
@@ -178,6 +179,25 @@ def cons_f33(comprobante, archivo_f33, mensaje=None):
         comprobante.receptor.estado = lineas['CLIENTE'][11]
         comprobante.receptor.pais = lineas['CLIENTE'][12]
         comprobante.receptor.codigo_postal = lineas['CLIENTE'][7]
+
+        nuevo.inventario = lineas['VEHICULO'][11]
+        nuevo.serie = lineas['VEHICULO'][0]
+        nuevo.condiciones_pago = lineas['VEHICULO'][24]
+        nuevo.procedencia = lineas['VEHICULO'][13]
+        nuevo.clave_vehicular = lineas['VEHICULO'][15]
+        nuevo.marca = lineas['VEHICULO'][1]
+        nuevo.linea = lineas['VEHICULO'][2]
+        nuevo.modelo = lineas['VEHICULO'][3]
+        nuevo.clase = lineas['VEHICULO'][12]
+        nuevo.tipo = ''
+        nuevo.color = lineas['VEHICULO'][4]
+        nuevo.no_puertas = lineas['VEHICULO'][16]
+        nuevo.no_cilindros = lineas['VEHICULO'][17]
+        nuevo.capacidad = lineas['VEHICULO'][18]
+        nuevo.combustible = lineas['VEHICULO'][19]
+        nuevo.motor = lineas['VEHICULO'][5]
+        nuevo.registro_vehicular = ''
+
         vehiculo.marca = lineas['VEHICULO'][1]
         vehiculo.modelo = lineas['VEHICULO'][2]
         vehiculo.anio = lineas['VEHICULO'][3]
@@ -200,6 +220,7 @@ def cons_f33(comprobante, archivo_f33, mensaje=None):
         comprobante.conceptos = conceptos
     finally:
         comprobante.vehiculo = vehiculo
+        comprobante.vehiculo_nuevo = nuevo
     return comprobante
 
 
@@ -301,6 +322,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
-    #uno('02-UD10022-BS03082.xml', '082019', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'ACA080131IL5')
+    #main()
+    uno('01-UD06001-AA17369.xml', '112019', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'ACE050912GZ0')
     logging.info(f'Fin')

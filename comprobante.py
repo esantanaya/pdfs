@@ -4,7 +4,7 @@ class Comprobante:
                  tipo_comprobante, total, version, emisor, receptor,
                  forma_pago=None, metodo_pago=None, conceptos=None,
                  pagos=None, timbre=None, total_letra=None, cuenta_pago=None,
-                 vehiculo=None, cfdi_relacionado=None):
+                 vehiculo=None, cfdi_relacionado=None, vehiculo_nuevo=None):
         self.nombre_archivo = nombre_archivo
         self.no_certificado = no_certificado
         self.fecha = fecha
@@ -28,6 +28,7 @@ class Comprobante:
         self.cuenta_pago = cuenta_pago
         self.vehiculo = vehiculo
         self.cfdi_relacionado = cfdi_relacionado
+        self.vehiculo_nuevo = vehiculo_nuevo
 
     @property
     def nombre_archivo(self):
@@ -213,6 +214,14 @@ class Comprobante:
     def cfdi_relacionado(self, cfdi_relacionado):
         self._cfdi_relacionado = cfdi_relacionado
 
+    @property
+    def vehiculo_nuevo(self):
+        return self._vehiculo_nuevo
+
+    @vehiculo_nuevo.setter
+    def vehiculo_nuevo(self, vehiculo_nuevo):
+        self._vehiculo_nuevo = vehiculo_nuevo
+
 
 class CfdiRelacionado:
     def __init__(self, tipo_relacion, uuids):
@@ -236,20 +245,183 @@ class CfdiRelacionado:
         self._uuids = uuids
 
 
+class VehiculoNuevo:
+    def __init__(self, inventario=None, serie=None, condiciones_pago=None,
+                 procedencia=None, clave_vehicular=None, marca=None,
+                 linea=None, modelo=None, clase=None, tipo=None, color=None,
+                 no_puertas=None, no_cilindros=None, capacidad=None,
+                 combustible=None, motor=None, registro_vehicular=None)
+        self.inventario = inventario
+        self.serie = serie
+        self.condiciones_pago = condiciones_pago
+        self.procedencia = procedencia
+        self.clave_vehicular = clave_vehicular
+        self.marca = marca
+        self.linea = linea
+        self.modelo = modelo
+        self.clase = clase
+        self.tipo = tipo
+        self.color = color
+        self.no_puertas = no_puertas
+        self.no_cilindros = no_cilindros
+        self.capacidad = capacidad
+        self.combustible = combustible
+        self.motor = motor
+        self.registro_vehicular = registro_vehicular
+
+        @property
+        def inventario(self):
+            return self.inventario
+
+        @inventario.setter
+        def inventario(self, inventario):
+            self.inventario = inventario
+
+        @property
+        def serie(self):
+            return self.serie
+
+        @serie.setter
+        def serie(self, serie):
+            self.serie = serie
+
+        @property
+        def condiciones_pago(self):
+            return self.condiciones_pago
+
+        @condiciones_pago.setter
+        def condiciones_pago(self, condiciones_pago):
+            self.condiciones_pago = condiciones_pago
+
+        @property
+        def procedencia(self):
+            return self.procedencia
+
+        @procedencia.setter
+        def procedencia(self, procedencia):
+            self.procedencia = procedencia
+
+        @property
+        def clave_vehicular(self):
+            return self.clave_vehicular
+
+        @clave_vehicular.setter
+        def clave_vehicular(self, clave_vehicular):
+            self.clave_vehicular = clave_vehicular
+
+        @property
+        def marca(self):
+            return self.marca
+
+        @marca.setter
+        def marca(self, marca):
+            self.marca = marca
+
+        @property
+        def linea(self):
+            return self.linea
+
+        @linea.setter
+        def linea(self, linea):
+            self.linea = linea
+
+        @property
+        def modelo(self):
+            return self.modelo
+
+        @modelo.setter
+        def modelo(self, modelo):
+            self.modelo = modelo
+
+        @property
+        def clase(self):
+            return self.clase
+
+        @clase.setter
+        def clase(self, clase):
+            self.clase = clase
+
+        @property
+        def tipo(self):
+            return self.tipo
+
+        @tipo.setter
+        def tipo(self, tipo):
+            self.tipo = tipo
+
+        @property
+        def color(self):
+            return self.color
+
+        @color.setter
+        def color(self, color):
+            self.color = color
+
+        @property
+        def no_puertas(self):
+            return self.no_puertas
+
+        @no_puertas.setter
+        def no_puertas(self, no_puertas):
+            self.no_puertas = no_puertas
+
+        @property
+        def no_cilindros(self):
+            return self.no_cilindros
+
+        @no_cilindros.setter
+        def no_cilindros(self, no_cilindros):
+            self.no_cilindros = no_cilindros
+
+        @property
+        def capacidad(self):
+            return self.capacidad
+
+        @capacidad.setter
+        def capacidad(self, capacidad):
+            self.capacidad = capacidad
+
+        @property
+        def combustible(self):
+            return self.combustible
+
+        @combustible.setter
+        def combustible(self, combustible):
+            self.combustible = combustible
+
+        @property
+        def motor(self):
+            return self.motor
+
+        @motor.setter
+        def motor(self, motor):
+            self.motor = motor
+
+        @property
+        def registro_vehicular(self):
+            return self.registro_vehicular
+
+        @registro_vehicular.setter
+        def registro_vehicular(self, registro_vehicular):
+            self.registro_vehicular = registro_vehicular
+
+
 class Vehiculo:
-    def __init__(self):
-        self.marca = ''
-        self.modelo = ''
-        self.anio = ''
-        self.color = ''
-        self.serie = ''
-        self.kilometraje = ''
-        self.placas = ''
-        self.motor = ''
-        self.bonete = ''
-        self.referencia = ''
-        self.recepcionista = ''
-        self.siniestro = ''
+    def __init__(self, marca='', modelo='', anio='', color='', serie='',
+                 kilometraje='', placas='', motor='', bonete='', referencia='',
+                 recepcionista='', siniestro=''):
+        self.marca = marca
+        self.modelo = modelo
+        self.anio = anio
+        self.color = color
+        self.serie = serie
+        self.kilometraje = kilometraje
+        self.placas = placas
+        self.motor = motor
+        self.bonete = bonete
+        self.referencia = referencia
+        self.recepcionista = recepcionista
+        self.siniestro = siniestro
 
     @property
     def marca(self):

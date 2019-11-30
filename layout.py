@@ -685,6 +685,32 @@ class ImpresionVehiculos(ImpresionServicio):
     def __init__(self, comprobante):
         super().__init__(comprobante)
 
+    def _segunda_cabecera(self, canvas):
+        veh = self._comprobante.vehiculo
+        info_seg_cab = [
+            ['Marca', 'Tipo Modelo', 'Año', 'Color', 'Número de serie'],
+            [veh.marca, veh.modelo, veh.anio, veh.color, veh.serie],
+            ['Kilometraje', 'Placas', 'Motor', 'Bonete', 'Referencia'],
+            [veh.kilometraje, veh.placas, veh.motor,
+             veh.bonete, veh.referencia],
+            ['Recepcionista', '', '', '', 'Siniestro/O. Compra'],
+            [veh.recepcionista, '', '', '', veh.siniestro],
+        ]
+        tabla_segunda = Table(
+            info_seg_cab,
+            colWidths=[
+                40.358 * mm,
+                40.358 * mm,
+                40.358 * mm,
+                40.358 * mm,
+                40.358 * mm,
+            ]
+        )
+        tabla_segunda.setStyle(self._estilo_seg_cab)
+        tabla_segunda.wrapOn(canvas, 0, 0)
+        tabla_segunda.drawOn(canvas, 7 * mm, 175 * mm)
+        return canvas
+
 
 class ImpresionPago(ImpresionComprobante):
     def _propiedades(self):
