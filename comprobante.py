@@ -250,7 +250,7 @@ class VehiculoNuevo:
                  procedencia=None, clave_vehicular=None, marca=None,
                  linea=None, modelo=None, clase=None, tipo=None, color=None,
                  no_puertas=None, no_cilindros=None, capacidad=None,
-                 combustible=None, motor=None, registro_vehicular=None)
+                 combustible=None, motor=None, registro_vehicular=None):
         self.inventario = inventario
         self.serie = serie
         self.condiciones_pago = condiciones_pago

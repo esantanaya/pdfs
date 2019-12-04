@@ -2,10 +2,12 @@ import os
 import re
 import traceback
 import logging
+import configparser
 
 from lxml import etree as ET
 
-from layout import ImpresionComprobante, ImpresionPago, ImpresionServicio
+from layout import (ImpresionComprobante, ImpresionPago, ImpresionServicio,
+                    ImpresionVehiculos)
 from comprobante import (Comprobante, Concepto, DoctoRelacionado, Emisor, Pago,
                          Receptor, TimbreFiscalDigital, Vehiculo,
                          VehiculoNuevo, CfdiRelacionado)
@@ -149,6 +151,23 @@ def construye_comprobante(tree, archivo):
 
     return comprobante
 
+def dar_tipo_impresion(agencia, tipo):
+   config = configparser.ConfigParser()
+   config.read('layout.ini', encoding='utf-8')
+   if agencia in config:
+       emisor = config[agencia]
+       return emisor.get(tipo).split('|')
+   return []
+
+def valida_nuevo(comprobante):
+   config = configparser.ConfigParser()
+   config.read('layout.ini', encoding='utf-8')
+   if comprobante.emisor.rfc in config:
+       emisor = config[comprobante.emisor.rfc]
+       movs_nuevos = emisor.get('NV').split('|')
+       tipo_mov = comprobante.nombre_archivo[3:7]
+       return tipo_mov in movs_nuevos
+
 
 def cons_f33(comprobante, archivo_f33, mensaje=None):
     vehiculo = Vehiculo()
@@ -217,7 +236,8 @@ def cons_f33(comprobante, archivo_f33, mensaje=None):
     except FileNotFoundError:
         raise FileNotFoundError
     else:
-        comprobante.conceptos = conceptos
+        if not valida_nuevo(comprobante):
+            comprobante.conceptos = conceptos
     finally:
         comprobante.vehiculo = vehiculo
         comprobante.vehiculo_nuevo = nuevo
@@ -265,7 +285,7 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
 
 def uno(archivo, mes_anio, ruta, agencia):
     comp = leer_archivo(archivo, mes_anio, ruta, agencia)
-    imp = ImpresionServicio(comp)
+    imp = ImpresionVehiculos(comp)
     imp.genera_pdf()
 
 
@@ -283,7 +303,7 @@ def main():
         'Notas': 'UD03',
         'Notas Hino': 'UA14',
         'Credito': 'UA03',
-        'Credito Auto': 'UA52',
+        'Credito Auto': 'UA60',
         'Servicio': 'UD10',
     }
     num = int(input(f'Selecciona una agencia de la lista {agencias}\n'))
@@ -301,10 +321,13 @@ def main():
     for archivo_valido in ordena_archivos(agencia, mes_anio, ruta, tipo):
         try:
             comp = leer_archivo(archivo_valido, mes_anio, ruta, agencia)
-            if tipo == 'UD10':
+            breakpoint()
+            if tipo in dar_tipo_impresion(agencia, 'SC'):
                 imp = ImpresionServicio(comp)
-            elif tipo == 'UA29':
+            elif tipo in dar_tipo_impresion(agencia, 'PG'):
                 imp = ImpresionPago(comp)
+            elif tipo in dar_tipo_impresion(agencia, 'NV'):
+                imp = ImpresionVehiculos(comp)
             else:
                 imp = ImpresionComprobante(comp)
             imp.genera_pdf()
@@ -322,6 +345,6 @@ def main():
 
 
 if __name__ == '__main__':
-    #main()
-    uno('01-UD06001-AA17369.xml', '112019', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'ACE050912GZ0')
+    main()
+    #uno('01-UD06001-AA17369.xml', '112019', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'ACE050912GZ0')
     logging.info(f'Fin')

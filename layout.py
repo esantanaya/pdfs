@@ -13,6 +13,7 @@ from reportlab.lib.units import mm
 from custom_canvas import PageNumCanvas
 from reportlab.platypus import (Frame, Paragraph, SimpleDocTemplate, Spacer,
                                 Table, TableStyle)
+from cara_letra import caracter_letra as car_let
 
 pdfmetrics.registerFont(TTFont('Bauhaus',
                         sep.join(['recursos', 'fonts', 'BAUHS93.TTF'])))
@@ -132,7 +133,18 @@ class ImpresionComprobante:
         self._small.splitLongWords = True
         self._small.spaceShrinkage = 0.05
 
+    def set_estilo_segunda_tabla(self):
+        self._estilo_seg_cab = TableStyle([
+            ('LEADING', (0, 0), (-1, -1), 8),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 2), (-1, 2), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 4), (-1, 4), 'Helvetica-Bold'),
+        ])
+
+
     def _set_estilos(self):
+        self.set_estilo_segunda_tabla()
         self._estilo_tabla_titulos = TableStyle([
             ('LEFTPADDING', (1, 0), (-1, -1), 4),
         ])
@@ -163,13 +175,6 @@ class ImpresionComprobante:
         self._estilo_tabla_info_qr = TableStyle([
             ('SIZE', (0, 0), (-1, -1), 8),
             ('LEADING', (0, 0), (-1, -1), 5.7),
-        ])
-        self._estilo_seg_cab = TableStyle([
-            ('LEADING', (0, 0), (-1, -1), 8),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTNAME', (0, 2), (-1, 2), 'Helvetica-Bold'),
-            ('FONTNAME', (0, 4), (-1, 4), 'Helvetica-Bold'),
         ])
 
     def _set_marcos(self, canvas):
@@ -685,30 +690,38 @@ class ImpresionVehiculos(ImpresionServicio):
     def __init__(self, comprobante):
         super().__init__(comprobante)
 
+    def set_estilo_segunda_tabla(self):
+        self._estilo_seg_cab = TableStyle([
+            ('LEADING', (0, 0), (-1, -1), 8),
+            ('ALIGN', (0, 0), (-1, -2), 'CENTER'),
+            ('SPAN', (2, 0), (3, 0)),
+            ('SPAN', (2, 1), (3, 1)),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 2), (-1, 2), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 4), (-1, 4), 'Helvetica-Bold'),
+            ('SPAN', (0, -1), (-1, -1)),
+            ('ALIGN', (0, -1), (-1, -1), 'LEFT'),
+        ])
+
     def _segunda_cabecera(self, canvas):
-        veh = self._comprobante.vehiculo
+        veh = self._comprobante.vehiculo_nuevo
         info_seg_cab = [
-            ['Marca', 'Tipo Modelo', 'Año', 'Color', 'Número de serie'],
-            [veh.marca, veh.modelo, veh.anio, veh.color, veh.serie],
-            ['Kilometraje', 'Placas', 'Motor', 'Bonete', 'Referencia'],
-            [veh.kilometraje, veh.placas, veh.motor,
-             veh.bonete, veh.referencia],
-            ['Recepcionista', '', '', '', 'Siniestro/O. Compra'],
-            [veh.recepcionista, '', '', '', veh.siniestro],
+            ['No. de inventario', 'No. de serie (NIV)', 'Condiciones de pago',
+             '', 'Procedencia', 'Clave vehicular'],
+            [veh.inventario, veh.serie, veh.condiciones_pago, '',
+             veh.procedencia, veh.clave_vehicular],
+            ['Marca', 'Linea', 'Modelo', 'Clase', 'Tipo', 'Color'],
+            [veh.marca, veh.linea, veh.modelo, veh.clase, veh.tipo, veh.color],
+            ['No. de puertas', 'No. de cilindros', 'Capacidad', 'Combustible',
+             'Motor', 'Registro vehicular'],
+            [veh.no_puertas, veh.no_cilindros, veh.capacidad, veh.combustible,
+             veh.motor, veh.registro_vehicular],
+            [f'NIV: {car_let(veh.serie)}']
         ]
-        tabla_segunda = Table(
-            info_seg_cab,
-            colWidths=[
-                40.358 * mm,
-                40.358 * mm,
-                40.358 * mm,
-                40.358 * mm,
-                40.358 * mm,
-            ]
-        )
+        tabla_segunda = Table(info_seg_cab)
         tabla_segunda.setStyle(self._estilo_seg_cab)
         tabla_segunda.wrapOn(canvas, 0, 0)
-        tabla_segunda.drawOn(canvas, 7 * mm, 175 * mm)
+        tabla_segunda.drawOn(canvas, 7 * mm, 173 * mm)
         return canvas
 
 
