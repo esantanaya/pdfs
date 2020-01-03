@@ -634,17 +634,15 @@ class ImpresionServicio(ImpresionComprobante):
     def _define_layout(self):
         documento = self._propiedades_documento()
         flowables = []
-        lista_detalle = [
-            [
-                'Cant',
-                'Unidad',
-                'Clave SAT',
-                'Clave Interna',
-                'Descripción',
-                'Precio',
-                'Importe',
-            ],
-        ]
+        lista_detalle = [[
+            'Cant',
+            'Unidad',
+            'Clave SAT',
+            'Clave Interna',
+            'Descripción',
+            'Precio',
+            'Importe',
+        ]]
         for concepto in self._comprobante.conceptos:
             fila = [
                 concepto.cantidad,
@@ -678,6 +676,7 @@ class ImpresionServicio(ImpresionComprobante):
         ])
         tabla_detalle.setStyle(estilo_tabla_detalle)
         t = tabla_detalle.split(201.79 * mm, 80.3 * mm)
+        #breakpoint()
         for x in t:
             flowables.append(x)
 

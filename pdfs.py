@@ -305,6 +305,7 @@ def main():
         'Credito': 'UA03',
         'Credito Auto': 'UA60',
         'Servicio': 'UD10',
+        'Auto': 'UD06',
     }
     num = int(input(f'Selecciona una agencia de la lista {agencias}\n'))
     agencia = agencias[num]
@@ -321,7 +322,6 @@ def main():
     for archivo_valido in ordena_archivos(agencia, mes_anio, ruta, tipo):
         try:
             comp = leer_archivo(archivo_valido, mes_anio, ruta, agencia)
-            breakpoint()
             if tipo in dar_tipo_impresion(agencia, 'SC'):
                 imp = ImpresionServicio(comp)
             elif tipo in dar_tipo_impresion(agencia, 'PG'):
