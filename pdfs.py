@@ -346,5 +346,5 @@ def main():
 
 if __name__ == '__main__':
     main()
-    #uno('01-UD06001-AA17369.xml', '112019', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'ACE050912GZ0')
+    #uno('01-UD06001-AA01360.xml', '012020', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'RCA100823GI9')
     logging.info(f'Fin')

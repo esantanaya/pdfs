@@ -6,7 +6,7 @@ from reportlab.graphics.barcode import qr
 from reportlab.graphics.shapes import Drawing
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.lib.colors import red
+from reportlab.lib.colors import red, Color
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
@@ -247,8 +247,8 @@ class ImpresionComprobante:
         tabla_pie = Table(
             self._info_extra,
             colWidths=[
-                25.41 * mm,
-                48.99 * mm,
+                21.5 * mm,
+                45 * mm,
                 28.60 * mm,
                 25 * mm,
             ]
@@ -486,7 +486,7 @@ class ImpresionComprobante:
                     if linea.startswith('[') and linea.endswith(']'):
                         titulo = linea[1:-1]
                     elif '=' in linea:
-                        clave, des = linea.split('=')
+                        clave, des = linea.split(' = ')
                         if (
                             titulo == 'FormasPago' and
                             self._comprobante.forma_pago == clave
@@ -502,6 +502,11 @@ class ImpresionComprobante:
                             and self._comprobante.metodo_pago == clave
                         ):
                             self._comprobante.metodo_pago += f' {des}'
+                        if (
+                            titulo == 'TiposComprobante'
+                            and self._comprobante.tipo_comprobante == clave
+                        ):
+                            self._comprobante.tipo_comprobante += f' {des}'
 
         except FileNotFoundError as fnfe:
             print(fnfe)
@@ -511,11 +516,11 @@ class ImpresionComprobante:
         naturaleza = self._comprobante.nombre_archivo[4]
         grupo = self._comprobante.nombre_archivo[5:7]
 
-        if self._comprobante.tipo_comprobante == 'P':
+        if self._comprobante.tipo_comprobante.startswith('P'):
             return 'PAGO'
-        if self._comprobante.tipo_comprobante == 'E':
+        if self._comprobante.tipo_comprobante.startswith('E'):
             return 'NOTA DE CRÉDITO'
-        if self._comprobante.tipo_comprobante == 'I':
+        if self._comprobante.tipo_comprobante.startswith('I'):
             if genero == 'U' and naturaleza == 'D' and grupo == '03':
                 return 'NOTA DE CARGO'
 
@@ -672,6 +677,7 @@ class ImpresionServicio(ImpresionComprobante):
             ('SIZE', (0, 0), (-1, -1), 9),
             ('ALIGN', (5, 0), (-1, -1), 'RIGHT'),
             ('ALIGN', (0, 1), (1, -1), 'CENTER'),
+            ('VALIGN', (0, 1), (-1, -1), 'TOP'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ])
         tabla_detalle.setStyle(estilo_tabla_detalle)
@@ -692,6 +698,7 @@ class ImpresionVehiculos(ImpresionServicio):
     def set_estilo_segunda_tabla(self):
         self._estilo_seg_cab = TableStyle([
             ('LEADING', (0, 0), (-1, -1), 8),
+            ('SIZE', (0, 0), (-1, -1), 8),
             ('ALIGN', (0, 0), (-1, -2), 'CENTER'),
             ('SPAN', (2, 0), (3, 0)),
             ('SPAN', (2, 1), (3, 1)),
@@ -721,6 +728,14 @@ class ImpresionVehiculos(ImpresionServicio):
         tabla_segunda.setStyle(self._estilo_seg_cab)
         tabla_segunda.wrapOn(canvas, 0, 0)
         tabla_segunda.drawOn(canvas, 7 * mm, 173 * mm)
+        canvas.saveState()
+        gray_trans = Color(.226, .226, .226, alpha=0.3)
+        canvas.rotate(90)
+        canvas.setFont('Helvetica-Bold', 80, leading=85)
+        canvas.setFillColor(gray_trans)
+        canvas.setStrokeColor(black)
+        canvas.drawString(95 * mm, -117* mm, 'ORIGINAL')
+        canvas.restoreState()
         return canvas
 
 
@@ -777,7 +792,7 @@ class ImpresionPago(ImpresionComprobante):
                     if linea.startswith('[') and linea.endswith(']'):
                         titulo = linea[1:-1]
                     elif '=' in linea:
-                        clave, des = linea.split('=')
+                        clave, des = linea.split(' = ')
                         if (
                             titulo == 'FormasPago' and
                             self._comprobante.pagos[0].forma_pago_p == clave
