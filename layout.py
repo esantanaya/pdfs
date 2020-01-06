@@ -728,7 +728,7 @@ class ImpresionVehiculos(ImpresionServicio):
         tabla_segunda.setStyle(self._estilo_seg_cab)
         tabla_segunda.wrapOn(canvas, 0, 0)
         tabla_segunda.drawOn(canvas, 7 * mm, 173 * mm)
-        canvas = self._vehiculo_original(canvas)
+        canvas = self._vehiculo_copia(canvas)
         return canvas
 
     def _vehiculo_original(self, canvas):
@@ -737,7 +737,7 @@ class ImpresionVehiculos(ImpresionServicio):
         canvas.rotate(90)
         canvas.setFont('Helvetica-Bold', 80, leading=85)
         canvas.setFillColor(gray_trans)
-        canvas.setStrokeColor(black)
+        canvas.setStrokeColor(gray_trans)
         canvas.drawString(95 * mm, -117* mm, 'ORIGINAL')
         canvas.restoreState()
         return canvas
@@ -748,8 +748,8 @@ class ImpresionVehiculos(ImpresionServicio):
         canvas.rotate(90)
         canvas.setFont('Helvetica-Bold', 80, leading=85)
         canvas.setFillColor(gray_trans)
-        canvas.setStrokeColor(black)
-        canvas.drawString(95 * mm, -117* mm, 'Copia sin valor')
+        canvas.setStrokeColor(gray_trans)
+        canvas.drawString(45 * mm, -117* mm, 'Copia sin valor')
         canvas.restoreState()
         return canvas
 
