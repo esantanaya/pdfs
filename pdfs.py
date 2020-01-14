@@ -22,7 +22,6 @@ logging.basicConfig(filename=os.path.join('errores.log'),
 def ordena_archivos(agencia, mes_anio, directorio, tipo):
     print(f'Ordenando archivos...')
     logging.info(f'Inicio')
-
     patron = r'\d{2}\-' + tipo + r'\w{3}\-\w{7}\.xml'
     ruta_archivos = (os.sep.join(directorio) + os.sep + agencia + os.sep +
                      mes_anio)
@@ -97,7 +96,6 @@ def construye_comprobante(tree, archivo):
                         grandchild.attrib['Version'],
                         str(doc),
                     )
-
     pagos = []
     if element_pagos is not None:
         for element_pago in element_pagos:
@@ -121,7 +119,6 @@ def construye_comprobante(tree, archivo):
                     docto,
                 )
                 pagos.append(pago)
-
     if root.tag == f'{ns_cfdi}Comprobante':
         print(f'Creando comprobante')
         comprobante = Comprobante(
@@ -144,12 +141,11 @@ def construye_comprobante(tree, archivo):
             conceptos=conceptos,
             cfdi_relacionado=uuid_rel
         )
-
         if comprobante.tipo_comprobante != 'P':
             comprobante.forma_pago = root.attrib['FormaPago']
             comprobante.metodo_pago = root.attrib['MetodoPago']
-
     return comprobante
+
 
 def dar_tipo_impresion(agencia, tipo):
    config = configparser.ConfigParser()
@@ -158,6 +154,7 @@ def dar_tipo_impresion(agencia, tipo):
        emisor = config[agencia]
        return emisor.get(tipo).split('|')
    return []
+
 
 def valida_nuevo(comprobante):
    config = configparser.ConfigParser()
@@ -264,8 +261,7 @@ def compl_comp_f33(comprobante, archivo_f33):
 def leer_archivo(archivo, mes_anio, ruta, agencia):
     print(f'leyendo archivo {archivo}')
     ruta = os.sep.join(ruta)
-    tree = ET.parse(ruta + os.sep + agencia + os.sep + mes_anio + os.sep
-                    + archivo)
+    tree = ET.parse(os.path.join(ruta, agencia, mes_anio, archivo))
     comprobante = construye_comprobante(tree, archivo)
     ruta_f33 = [
         '\\\\192.168.24.10',
