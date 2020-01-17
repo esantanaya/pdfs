@@ -4,7 +4,8 @@ class Comprobante:
                  tipo_comprobante, total, version, emisor, receptor,
                  forma_pago=None, metodo_pago=None, conceptos=None,
                  pagos=None, timbre=None, total_letra=None, cuenta_pago=None,
-                 vehiculo=None, cfdi_relacionado=None, vehiculo_nuevo=None):
+                 vehiculo=None, cfdi_relacionado=None, vehiculo_nuevo=None,
+                 iva=None, retenidos=None):
         self.nombre_archivo = nombre_archivo
         self.no_certificado = no_certificado
         self.fecha = fecha
@@ -14,6 +15,8 @@ class Comprobante:
         self.sello = sello
         self.serie = serie
         self.subtotal = subtotal
+        self.iva = iva
+        self.retenidos = retenidos #Se va a usar para el IVA retenido
         self.tipo_comprobante = tipo_comprobante
         self.total = total
         self.version = version
@@ -101,6 +104,22 @@ class Comprobante:
     @subtotal.setter
     def subtotal(self, subtotal):
         self._subtotal = subtotal
+
+    @property
+    def iva(self):
+        return self._iva
+
+    @iva.setter
+    def iva(self, iva):
+        self._iva = iva
+
+    @property
+    def retenidos(self):
+        return self._retenidos
+
+    @retenidos.setter
+    def retenidos(self, retenidos):
+        self._retenidos = retenidos
 
     @property
     def tipo_comprobante(self):

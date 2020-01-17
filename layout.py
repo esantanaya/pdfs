@@ -32,14 +32,14 @@ class ImpresionComprobante:
             [
                 'Forma de pago:',
                 self._comprobante.forma_pago,
-                'Método de pago:',
-                self._comprobante.metodo_pago,
+                'Tipo de Comprobante:',
+                self._comprobante.tipo_comprobante,
             ],
             [
                 'Uso de CFDI:',
                 self._comprobante.receptor.uso_cfdi,
-                'Tipo de Comprobante:',
-                self._comprobante.tipo_comprobante,
+                'Método de pago:',
+                self._comprobante.metodo_pago,
             ],
         ]
         if self._comprobante.cfdi_relacionado:
@@ -54,11 +54,20 @@ class ImpresionComprobante:
         subtotal = float(self._comprobante.subtotal)
         total = float(self._comprobante.total)
         impuestos = total - subtotal
+        iva = float(self._comprobante.iva)
+        retencion = float(self._comprobante.retenidos)
         self._info_totales = [
             ['Subtotal :', f'${subtotal:,.2f}'],
-            ['I.V.A. 0.16% :', f'${impuestos:,.2f}'],
+            ['I.V.A. 16% :', f'${iva:,.2f}'],
             ['Total :', f'${total:,.2f}'],
         ]
+        if self._comprobante.emisor.rfc == 'AIQ070917FVA':
+            self._info_totales = [
+                ['Subtotal :', f'${subtotal:,.2f}'],
+                ['I.V.A. 16% :', f'${iva:,.2f}'],
+                ['Retención I.V.A. 6% :', f'${retencion:,.2f}'],
+                ['Total :', f'${total:,.2f}'],
+            ]
 
     def _rutas(self):
         self.nombre = self._comprobante.nombre_archivo[:-4] + '.pdf'
@@ -682,7 +691,6 @@ class ImpresionServicio(ImpresionComprobante):
         ])
         tabla_detalle.setStyle(estilo_tabla_detalle)
         t = tabla_detalle.split(201.79 * mm, 80.3 * mm)
-        #breakpoint()
         for x in t:
             flowables.append(x)
 

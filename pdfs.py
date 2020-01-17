@@ -57,13 +57,13 @@ def construye_comprobante(tree, archivo):
                 child.attrib['RegimenFiscal'],
                 child.attrib['Rfc']
             )
-        elif child.tag == f'{ns_cfdi}Receptor':
+        if child.tag == f'{ns_cfdi}Receptor':
             receptor = Receptor(
                 child.attrib['Nombre'],
                 child.attrib['Rfc'],
                 child.attrib['UsoCFDI'],
             )
-        elif child.tag == f'{ns_cfdi}Conceptos':
+        if child.tag == f'{ns_cfdi}Conceptos':
             for grandchild in child:
                 if grandchild.tag == f'{ns_cfdi}Concepto':
                     concepto = Concepto(
@@ -76,7 +76,7 @@ def construye_comprobante(tree, archivo):
                         grandchild.attrib['ValorUnitario'],
                     )
                     conceptos.append(concepto)
-        elif child.tag == f'{ns_cfdi}Complemento':
+        if child.tag == f'{ns_cfdi}Complemento':
             for grandchild in child:
                 if grandchild.tag == f'{ns_pago10}Pagos':
                     element_pagos = list(grandchild)
@@ -97,7 +97,6 @@ def construye_comprobante(tree, archivo):
                         grandchild.attrib['Version'],
                         str(doc),
                     )
-
     pagos = []
     if element_pagos is not None:
         for element_pago in element_pagos:
@@ -124,6 +123,9 @@ def construye_comprobante(tree, archivo):
 
     if root.tag == f'{ns_cfdi}Comprobante':
         print(f'Creando comprobante')
+        impuestos = root.find(f'{ns_cfdi}Impuestos')
+        iva = impuestos.attrib['TotalImpuestosTrasladados']
+        retencion = impuestos.attrib['TotalImpuestosRetenidos']
         comprobante = Comprobante(
             archivo,
             root.attrib['NoCertificado'],
@@ -142,7 +144,9 @@ def construye_comprobante(tree, archivo):
             pagos=pagos,
             timbre=timbre,
             conceptos=conceptos,
-            cfdi_relacionado=uuid_rel
+            cfdi_relacionado=uuid_rel,
+            iva=iva,
+            retenidos=retencion,
         )
 
         if comprobante.tipo_comprobante != 'P':
@@ -285,7 +289,7 @@ def leer_archivo(archivo, mes_anio, ruta, agencia):
 
 def uno(archivo, mes_anio, ruta, agencia):
     comp = leer_archivo(archivo, mes_anio, ruta, agencia)
-    imp = ImpresionVehiculos(comp)
+    imp = ImpresionComprobante(comp)
     imp.genera_pdf()
 
 
@@ -346,5 +350,5 @@ def main():
 
 if __name__ == '__main__':
     main()
-    #uno('01-UD06001-AA01360.xml', '012020', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'RCA100823GI9')
+    #uno('01-UA03001-ZN00732.xml', '012020', [r'\\192.168.24.10','e$', 'cfd', 'almacen'], 'AIQ070917FVA')
     logging.info(f'Fin')
