@@ -53,15 +53,15 @@ class ImpresionComprobante:
             )
         subtotal = float(self._comprobante.subtotal)
         total = float(self._comprobante.total)
-        impuestos = total - subtotal
         iva = float(self._comprobante.iva)
-        retencion = float(self._comprobante.retenidos)
+        retencion = self._comprobante.retenidos
         self._info_totales = [
             ['Subtotal :', f'${subtotal:,.2f}'],
             ['I.V.A. 16% :', f'${iva:,.2f}'],
             ['Total :', f'${total:,.2f}'],
         ]
-        if self._comprobante.emisor.rfc == 'AIQ070917FVA':
+        if retencion is not None:
+            retencion = float(retencion)
             self._info_totales = [
                 ['Subtotal :', f'${subtotal:,.2f}'],
                 ['I.V.A. 16% :', f'${iva:,.2f}'],

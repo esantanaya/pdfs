@@ -125,7 +125,7 @@ def construye_comprobante(tree, archivo):
         print(f'Creando comprobante')
         impuestos = root.find(f'{ns_cfdi}Impuestos')
         iva = impuestos.attrib['TotalImpuestosTrasladados']
-        retencion = impuestos.attrib['TotalImpuestosRetenidos']
+        retencion = impuestos.attrib.get('TotalImpuestosRetenidos')
         comprobante = Comprobante(
             archivo,
             root.attrib['NoCertificado'],
