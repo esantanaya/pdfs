@@ -7,19 +7,20 @@ from pdfs import construye_comprobante
 def get_tipos(ruta):
     tipos = []
     for ubicacion, folders, archivos in os.walk(ruta):
+        breakpoint()
         tipos += folders
         for nombre in archivos:
             if nombre.endswith('.xml'):
-                ar_xml = os.path.join(ubicacion, nombre)
+                arc_xml = os.path.join(ubicacion, nombre)
+            if nombre.endswith('.f33'):
+                arc_f33 = os.path.join(ubicacion, nombre)
+        for tipo in tipos:
+            xml_tipo = [_ for _ in arc_xml if tipo in _]
+            for num, xml in enumerate(xml_tipo):
+                print(tipo, num)
 
-    carpetas_archivos = {
-        x:y for x, y in enumerate(os.walk(ruta))
-    }
-    tipos = carpetas_archivos.get(0)[1]
-    return tipos
 
 
 def leer_archivo(ruta_archivo, archivo):
     tree = ET.parse(ruta_archivo)
     comprobante = construye_comprobante(tree, archivo)
-
