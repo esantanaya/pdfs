@@ -477,6 +477,7 @@ class ImpresionComprobante:
             ('SIZE', (0, 0), (-1, -1), 9),
             ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('VALIGN', (0, 1), (-1, -1), 'TOP'),
         ])
         tabla_detalle.setStyle(estilo_tabla_detalle)
         t = tabla_detalle.split(201.79 * mm, 119.94 * mm)

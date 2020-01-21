@@ -9,13 +9,11 @@ from layout import (ImpresionComprobante, ImpresionPago, ImpresionServicio,
 def genera_impresion(tipo, comprobante):
     if tipo == 'servicio':
         imp = ImpresionServicio(comprobante)
-    if tipo == 'recibos':
+    elif tipo == 'recibos':
         imp = ImpresionPago(comprobante)
-    if tipo == 'refacciones':
-        imp = ImpresionComprobante(comprobante)
-    if tipo == 'vehiculos':
+    elif tipo == 'vehiculos':
         imp = ImpresionVehiculos(comprobante)
-    if tipo == 'notas_cargo':
+    else:
         imp = ImpresionComprobante(comprobante)
     imp.genera_pdf()
 
