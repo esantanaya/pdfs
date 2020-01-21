@@ -82,8 +82,11 @@ def construye_comprobante(tree, archivo):
                 if grandchild.tag == f'{ns_tfd}TimbreFiscalDigital':
                     str_timbre = ET.tostring(grandchild)
                     xdoc = ET.fromstring(str_timbre)
-                    xslt = ET.parse(
-                        'recursos\\xslt\\cadenaoriginal_TFD_1_1.xslt')
+                    xslt = ET.parse(os.path.join(
+                        'recursos',
+                        'xslt',
+                        'cadenaoriginal_TFD_1_1.xslt',
+                    ))
                     trans = ET.XSLT(xslt)
                     doc = trans(xdoc)
                     timbre = TimbreFiscalDigital(
