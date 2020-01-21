@@ -1,11 +1,10 @@
 __pycache__/
-recursos/
 CFD/
 firefox/
 *.png
 *.pdf
-*.F33
-*.xml
+/*.F33
+/*.xml
 *.log
 *.swp
 *.swo

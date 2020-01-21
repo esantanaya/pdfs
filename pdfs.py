@@ -22,7 +22,6 @@ logging.basicConfig(filename=os.path.join('errores.log'),
 def ordena_archivos(agencia, mes_anio, directorio, tipo):
     print(f'Ordenando archivos...')
     logging.info(f'Inicio')
-
     patron = r'\d{2}\-' + tipo + r'\w{3}\-\w{7}\.xml'
     ruta_archivos = (os.sep.join(directorio) + os.sep + agencia + os.sep +
                      mes_anio)
@@ -83,8 +82,11 @@ def construye_comprobante(tree, archivo):
                 if grandchild.tag == f'{ns_tfd}TimbreFiscalDigital':
                     str_timbre = ET.tostring(grandchild)
                     xdoc = ET.fromstring(str_timbre)
-                    xslt = ET.parse(
-                        'recursos\\xslt\\cadenaoriginal_TFD_1_1.xslt')
+                    xslt = ET.parse(os.path.join(
+                        'recursos',
+                        'xslt',
+                        'cadenaoriginal_TFD_1_1.xslt',
+                    ))
                     trans = ET.XSLT(xslt)
                     doc = trans(xdoc)
                     timbre = TimbreFiscalDigital(
@@ -120,7 +122,6 @@ def construye_comprobante(tree, archivo):
                     docto,
                 )
                 pagos.append(pago)
-
     if root.tag == f'{ns_cfdi}Comprobante':
         print(f'Creando comprobante')
         impuestos = root.find(f'{ns_cfdi}Impuestos')
@@ -148,12 +149,11 @@ def construye_comprobante(tree, archivo):
             iva=iva,
             retenidos=retencion,
         )
-
         if comprobante.tipo_comprobante != 'P':
             comprobante.forma_pago = root.attrib['FormaPago']
             comprobante.metodo_pago = root.attrib['MetodoPago']
-
     return comprobante
+
 
 def dar_tipo_impresion(agencia, tipo):
    config = configparser.ConfigParser()
@@ -162,6 +162,7 @@ def dar_tipo_impresion(agencia, tipo):
        emisor = config[agencia]
        return emisor.get(tipo).split('|')
    return []
+
 
 def valida_nuevo(comprobante):
    config = configparser.ConfigParser()
@@ -268,8 +269,7 @@ def compl_comp_f33(comprobante, archivo_f33):
 def leer_archivo(archivo, mes_anio, ruta, agencia):
     print(f'leyendo archivo {archivo}')
     ruta = os.sep.join(ruta)
-    tree = ET.parse(ruta + os.sep + agencia + os.sep + mes_anio + os.sep
-                    + archivo)
+    tree = ET.parse(os.path.join(ruta, agencia, mes_anio, archivo))
     comprobante = construye_comprobante(tree, archivo)
     ruta_f33 = [
         '\\\\192.168.24.10',
