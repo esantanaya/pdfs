@@ -183,7 +183,7 @@ def cons_f33(comprobante, archivo_f33, mensaje=None):
     nuevo = VehiculoNuevo()
     conceptos = []
     try:
-        with open(archivo_f33, 'r') as f33:
+        with open(archivo_f33, 'r', encoding='latin-1') as f33:
             if mensaje:
                 print('Encontramos el F33 en errores!')
             for linea in f33:
@@ -193,7 +193,7 @@ def cons_f33(comprobante, archivo_f33, mensaje=None):
                                         t_lin[2], t_lin[4], t_lin[6],
                                         t_lin[5])
                     conceptos.append(concepto)
-        with open(archivo_f33, 'r') as f33:
+        with open(archivo_f33, 'r', encoding='latin-1') as f33:
             lineas = {
                 x.rstrip().split('|')[0]:
                 x.rstrip().split('|')[1:] for x in f33
